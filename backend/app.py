@@ -24,8 +24,18 @@ DB_PORT = '5432'
 DB_NAME = 'projetofrota'
 
 senha_encoded = quote_plus(DB_PASSWORD)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('postgresql://projeto_frota_user:hqJeYS98KzHVoW2rlzked4wPdajWPbj7@dpg-d4ctl2shg0os73d97h3g-a/projeto_frota') or \
-    f'postgresql://{DB_USER}:{senha_encoded}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+RENDER_DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if RENDER_DATABASE_URL:
+    # Substitui 'postgres' por 'postgresql' para garantir compatibilidade com SQLAlchemy
+    SQLALCHEMY_URL = RENDER_DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+else:
+    # Usa a configuração local se a variável de ambiente não existir
+    SQLALCHEMY_URL = f'postgresql://{DB_USER}:{senha_encoded}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_URL
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'uma_chave_secreta_para_flash'
 
