@@ -1,0 +1,100 @@
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to bottom, #ffffff, #dfe3f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: linear-gradient(to bottom right, #ffffff, #edf0ff);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 380px;
+      padding: 40px;
+      text-align: center;
+      border-left: 4px solid #F57C00;
+    }
+
+    .login-container img {
+      width: 140px;
+      margin-bottom: 15px;
+    }
+
+    .login-container h2 {
+      color: #1a237e;
+      font-weight: 600;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+      text-align: left;
+    }
+
+    .form-group label {
+      color: #1a237e;
+      font-size: 14px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #c5cae9;
+      border-radius: 8px;
+      outline: none;
+      transition: 0.3s;
+      font-size: 15px;
+    }
+
+    .form-group input:focus {
+      border-color: #1a237e;
+      box-shadow: 0 0 6px rgba(26,35,126,0.3);
+    }
+
+    .login-btn {
+      background-color: #1a237e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 10px rgba(26,35,126,0.3);
+      border: 2px solid #F57C00
+    }
+
+    .login-btn:hover {
+      background: #F57C00;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 124, 0, 0.4);
+      
+    }
+
+    .footer-text {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .footer-text a {
+      color: #ff7b00;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-text a:hover {
+      text-decoration: underline;
+    }

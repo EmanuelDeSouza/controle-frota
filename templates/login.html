@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+
+<body>
+  <div class="login-container">
+    
+    <img src="{{ url_for('static', filename='img/logo.jpeg') }}" alt="Logo"> 
+    
+    <h2>Acesso ao Sistema</h2>
+    
+    <form method="POST" action="{{ url_for('login') }}">
+      
+      {% if erro %}
+          <p style="color: red; font-weight: bold; text-align: center;">{{ erro }}</p>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="email">Usuário ou E-mail</label>
+        <input type="text" name="usuario" id="email" placeholder="Digite seu e-mail">
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" name="senha" id="password" placeholder="Digite sua senha">
+      </div>
+      <button type="submit" class="login-btn">Entrar</button>
+    </form>
+    
+    <div class="footer-text">
+        <p>Não possui uma conta? <a href="{{ url_for('cadastro') }}">Cadastrar</a></p>
+    </div>
+  </div>
+</body>
+</html>
