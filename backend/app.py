@@ -106,7 +106,7 @@ def logout():
 @app.route('/principal')
 def principal():
     if 'usuario_id' not in session:
-        return redirect(url_for('login_process'))
+        return redirect(url_for('login'))
     return render_template('pagprincipal.html')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
