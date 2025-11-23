@@ -165,17 +165,6 @@ tr:nth-child(even) {
   }
 }
 
-/* ===== EFEITO DE LISTA ===== */
-#truckList li {
-  opacity: 0;
-  transform: translateX(-20px);
-  animation: slideIn 0.5s forwards;
-}
-
-@keyframes slideIn {
-  to { opacity: 1; transform: translateX(0); }
-}
-
 .reportForm {
   margin-left: auto;
   border-radius: 30px;
