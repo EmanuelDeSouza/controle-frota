@@ -24,10 +24,7 @@ DB_NAME = os.environ.get('DB_NAME', 'projetofrota')
 senha_encoded = quote_plus(DB_PASSWORD)
 RENDER_DATABASE_URL = os.environ.get('DATABASE_URL')
 
-with app.app_context():
-    db.create_all()
-    print("Tabelas verificadas/criadas com sucesso no banco!")
-    
+
 if RENDER_DATABASE_URL:
     SQLALCHEMY_URL = RENDER_DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 else:
@@ -122,7 +119,10 @@ def logout():
     flash("Logout realizado com sucesso.")
     return redirect(url_for('login'))
 
-# ==================== REGISTRO DOS MÓDULOS (BLUEPRINTS) ====================
+with app.app_context():
+    db.create_all()
+    print("Tabelas verificadas/criadas com sucesso no banco!")
+    
 from modulos.caminhao_rotas import caminhao_bp
 from modulos.item_rotas import item_bp
 from modulos.relatorio_rotas import relatorio_bp
