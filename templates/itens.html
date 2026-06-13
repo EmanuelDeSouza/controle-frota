@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Itens{% endblock %}
+
+{% block content %} 
+ 
+ <!-- ===== CADASTRO DE ITENS ===== -->
+  <div class="card itens">
+    <h2>Cadastro de Itens</h2>
+    
+    <form id="itemForm" class="truckForm"> <!-- Alterado para itemForm -->
+      <div class="field"><input class="input" type="text" id="nomeItem" name="nome" placeholder="Nome" required></div>
+      <div class="field"><input class="input" type="number" step="0.01" id="valorUnitario" name="valor" placeholder="Valor Unitário" required></div>
+      <div class="field"><input class="input" type="text" id="categoriaItem" name="categoria" placeholder="Categoria"></div>
+    </form>
+    <button type="button" id="btnSalvarItem">Cadastrar Item</button>
+</div>
+
+  <!-- ===== LISTA DE Itens ===== -->
+  <h2 class="listadeitenss">Lista de Itens</h2>
+  <table id="tabela-itens">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Valor Unitário</th>
+        <th>Categoria</th>
+      </tr>
+    </thead>
+    <tbody id="lista-itens-body"></tbody>
+  </table>
+
+  <div id="lista-vazia-msg" class="empty-list-message" style="display: none;">
+    Nenhum Item cadastrado
+  </div>
+  
+  <!-- ===== MODAL MANUTENÇÃO ===== -->
+<div id="modalManutencao" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Registrar Manutenção</h3>
+
+    <input type="hidden" id="caminhaoIdManutencao">
+
+    <label>Tipo:</label>
+    <select id="tipoManutencao">
+      <option value="preventiva">Preventiva</option>
+      <option value="corretiva">Corretiva</option>
+    </select>
+
+    <label>Descrição:</label>
+    <input type="text" id="descricaoManutencao">
+
+    <label>Data:</label>
+    <input type="date" id="dataManutencao">
+
+    <label>KM:</label>
+    <input type="number" id="kmManutencao">
+
+    <button onclick="salvarManutencao()">Salvar</button>
+    <button onclick="fecharModalManutencao()">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===== MODAL ABASTECIMENTO ===== -->
+<div id="modalAbastecimento" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Registrar Abastecimento</h3>
+
+    <input type="hidden" id="caminhaoIdAbastecimento">
+
+    <label>Litros:</label>
+    <input type="number" id="litros">
+
+    <label>Valor Total:</label>
+    <input type="number" step="0.01" id="valorTotal">
+
+    <label>KM:</label>
+    <input type="number" id="kmAbastecimento">
+
+    <label>Data:</label>
+    <input type="date" id="dataAbastecimento">
+
+    <button onclick="salvarAbastecimento()">Salvar</button>
+    <button onclick="fecharModalAbastecimento()">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===== MODAL HISTÓRICO ===== -->
+<div id="modalHistorico" class="modal" style="display:none;">
+  <div class="modal-content" style="width: 600px;">
+    <h3>Histórico do Caminhão</h3>
+
+    <h4>Manutenções</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Descrição</th>
+          <th>Data</th>
+          <th>KM</th>
+        </tr>
+      </thead>
+      <tbody id="lista-manutencoes"></tbody>
+    </table>
+
+    <h4>Abastecimentos</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Litros</th>
+          <th>Valor</th>
+          <th>KM</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody id="lista-abastecimentos"></tbody>
+    </table>
+
+    <button onclick="fecharModalHistorico()">Fechar</button>
+  </div>
+  
+  
+  
+{% endblock %}

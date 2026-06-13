@@ -12,54 +12,7 @@
 <body>
   <img src="{{ url_for('static', filename='img/logo.jpeg') }}" alt="Logo" style="width: 190px; height: auto;"> 
 
-  <!-- ===== CADASTRO DE CAMINHÕES ===== -->
-  <div class="card cadastro">
-    <h2>Cadastro de Caminhões</h2>
-    
-    <form id="truckForm" class="truckForm">
-      <div class="field"><input class="input" type="text" name="plate" placeholder="Placa" required></div>
-      <div class="field"><input class="input" type="text" name="model" placeholder="Modelo" required></div>
-      <div class="field"><input class="input" type="text" name="manufacturer" placeholder="Fabricante"></div>
-      <div class="field"><input class="input" type="number" name="year" placeholder="Ano"></div>
-    </form>
-
-    <button id="btn-cadastro" class="btn-cadastro">Cadastrar</button>
-  </div>
-
-  <!-- ===== LISTA DE CAMINHÕES ===== -->
-  <h2 class="listadecaminhoes">Lista de Caminhões</h2>
-  <table id="tabela-caminhoes">
-    <thead>
-      <tr>
-        <th>Placa</th>
-        <th>Fabricante</th>
-        <th>Modelo</th>
-        <th>Ano</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody id="lista-caminhoes-body"></tbody>
-  </table>
-
-  <div id="lista-vazia-msg" class="empty-list-message" style="display: none;">
-    Nenhum caminhão cadastrado
-  </div>
-
-  <!-- ===== RELATÓRIO DE GASTOS ===== -->
-  <div class="card">
-    <h2 class="relatoriodegastos">Relatório de Gastos</h2>
-
-    <div class="reportForm">
-      <label>Data Inicial:</label>
-      <input id="dataInicial" class="input" type="date">
-
-      <label>Data Final:</label>
-      <input id="dataFinal" class="input" type="date">
-      
-      <button id="btnGerarRelatorio" class="btn-relatorio">Gerar Relatório</button>
-    </div>
-  </div>
-  <div id="resultadoRelatorio" style="margin-top: 20px;"></div>
+ 
 
   <!-- ===== MODAL ADICIONAR GASTO ===== -->
   <div id="modalGasto" class="modal" style="display:none;">

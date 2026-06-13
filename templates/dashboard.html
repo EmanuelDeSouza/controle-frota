@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2>Dashboard</h2>
+<p id="mes-referencia" style="text-align:center; color:#888; margin-top:-15px; margin-bottom:25px;"></p>
+
+<div class="dashboard-cards">
+  <div class="dashboard-card" style="border-top: 4px solid #e53935;">
+    <p style="font-size:13px; color:#888;">Total Gastos do Mês</p>
+    <h2 id="card-gastos">R$ 0,00</h2>
+  </div>
+  <div class="dashboard-card" style="border-top: 4px solid #1B2B7A;">
+    <p style="font-size:13px; color:#888;">Total Abastecimento</p>
+    <h2 id="card-abastecimento">R$ 0,00</h2>
+  </div>
+  <div class="dashboard-card" style="border-top: 4px solid #43a047;">
+    <p style="font-size:13px; color:#888;">Total Receitas do Mês</p>
+    <h2 id="card-receitas">R$ 0,00</h2>
+  </div>
+  <div class="dashboard-card" id="card-lucro-container" style="border-top: 4px solid #F57C00;">
+    <p style="font-size:13px; color:#888;">Lucro do Mês</p>
+    <h2 id="card-lucro">R$ 0,00</h2>
+  </div>
+</div>
+
+<div class="card" style="margin-top:30px;">
+  <h3 style="margin-bottom:15px;">Gastos por Categoria</h3>
+  <div style="position: relative; height:250px; width:100%;">
+    <canvas id="graficoCategorias"></canvas>
+  </div>
+</div>
+
+<div class="card" style="margin-top:30px;">
+  <h3 style="margin-bottom:15px;">Resumo por Caminhão</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Placa</th>
+        <th>Modelo</th>
+        <th>Total Gastos</th>
+        <th>Total Receitas</th>
+        <th>Lucro</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-resumo"></tbody>
+  </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Definir Mês de Referência no cabeçalho
+    const agora = new Date();
+    const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    document.getElementById("mes-referencia").textContent = `Referência: ${meses[agora.getMonth()]} ${agora.getFullYear()}`;
+
+    // Função de formatação para Real (R$)
+    const fmt = valor => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    try {
+        // 2. Requisição para a API do Blueprint (/api/dashboard)
+        const resposta = await fetch('/api/dashboard');
+        const d = await resposta.json();
+
+        if (d.error) {
+            console.error("Erro do servidor:", d.error);
+            return;
+        }
+
+        // 3. Injetar dados nos Cards
+        document.getElementById('card-gastos').innerText = fmt(d.total_gastos);
+        document.getElementById('card-abastecimento').innerText = fmt(d.total_abastecimento);
+        document.getElementById('card-receitas').innerText = fmt(d.total_receitas);
+        
+        const lucroEl = document.getElementById('card-lucro');
+        lucroEl.innerText = fmt(d.lucro);
+        lucroEl.style.color = d.lucro >= 0 ? '#43a047' : '#e53935';
+
+        // 4. Renderizar Gráfico de Pizza (Chart.js)
+        const ctx = document.getElementById('graficoCategorias').getContext('2d');
+        
+        if (!d.gastos_por_categoria || d.gastos_por_categoria.length === 0) {
+            ctx.font = "16px sans-serif";
+            ctx.fillStyle = "#888";
+            ctx.textAlign = "center";
+            ctx.fillText("Nenhum gasto registrado neste mês.", 150, 100);
+        } else {
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: d.gastos_por_categoria.map(c => c.tipo),
+                    datasets: [{
+                        data: d.gastos_por_categoria.map(c => c.valor),
+                        backgroundColor: ['#1B2B7A', '#F57C00', '#43a047', '#e53935', '#8e24aa', '#34495e'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // 5. Renderizar a Tabela Dinamicamente
+        const tbody = document.getElementById('tbody-resumo');
+        tbody.innerHTML = ""; // Limpa mocks estásticos
+
+        if (!d.resumo_caminhoes || d.resumo_caminhoes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">Nenhum caminhão cadastrado ou ativo neste período.</td></tr>';
+        } else {
+            d.resumo_caminhoes.forEach(c => {
+                const tr = document.createElement('tr');
+                const corLucro = c.lucro >= 0 ? '#43a047' : '#e53935';
+
+                tr.innerHTML = `
+                    <td>${c.placa}</td>
+                    <td>${c.modelo}</td>
+                    <td>${fmt(c.total_gastos)}</td>
+                    <td>${fmt(c.total_receitas)}</td>
+                    <td style="color: ${corLucro}; font-weight: 600;">${fmt(c.lucro)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+    } catch (err) {
+        console.error("Erro ao carregar dados do dashboard de Engenharia:", err);
+    }
+});
+</script>
+{% endblock %}

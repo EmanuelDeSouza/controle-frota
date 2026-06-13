@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Controle de Frota{% endblock %}</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/principal.css') }}">
+</head>
+
+<body>
+
+  
+
+  <!-- MENU -->
+  <div class="sidebar">
+    <img src="{{ url_for('static', filename='img/logo.jpeg') }}" style="width:150px;">
+    
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('caminhoes') }}">Caminhões</a>
+    <a href="{{ url_for('relatorio') }}">Relatórios</a>
+    <a href="/itens" class="btn-nav">Gerenciar Itens</a>
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div class="conteudo">
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="{{ url_for('static', filename='js/testecadastro.js') }}"></script>
+</body>
+</html>

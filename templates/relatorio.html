@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <h2 class="relatoriodegastos">Relatório de Gastos</h2>
+
+  <div class="reportForm">
+    <div class="field">
+      <label>Data Inicial:</label>
+      <input id="dataInicial" class="input" type="date">
+    </div>
+
+    <div class="field">
+      <label>Data Final:</label>
+      <input id="dataFinal" class="input" type="date">
+    </div>
+
+    <div class="field">
+      <label>Caminhão:</label>
+      <select id="placaSelect" class="input">
+        <option value="todos">Todos os Caminhões</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Tipo de Gasto:</label>
+      <select id="tipoSelect" class="input">
+        <option value="todos">Todos os Tipos</option>
+        <option value="Manutenção">Manutenção</option>
+        <option value="Abastecimento">Abastecimento</option>
+        <option value="Pedágio">Pedágio</option>
+        <option value="Outros">Outros</option>
+      </select>
+    </div>
+
+    <button id="btnGerarRelatorio" class="btn-relatorio">Gerar Relatório</button>
+  </div>
+</div>
+
+<div id="resultadoRelatorio" style="margin-top: 20px;"></div>
+
+{% endblock %}
