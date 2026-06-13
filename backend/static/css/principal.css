@@ -459,35 +459,54 @@ btn-relatorio:hover {
   text-align: center;
 }
 
-.tabela-itens th:nth-child(1),
-.tabela-itens td.col-nome {
-    width: 35%;
-    text-align: left;
+#tabela-itens {
+    width: 100% !important;
+    border-collapse: collapse;
+    table-layout: fixed !important; 
+    margin-top: 15px;
 }
 
 
-.tabela-itens th:nth-child(2),
-.tabela-itens td.col-valor {
-    width: 25%;
-    text-align: left;
+#tabela-itens th, 
+#tabela-itens td {
+    padding: 12px 10px !important;
+    vertical-align: middle !important;
+    box-sizing: border-box;
 }
 
 
-.tabela-itens th:nth-child(3),
-.tabela-itens td.col-categoria {
-    width: 25%;
-    text-align: left;
+#tabela-itens th:nth-child(1),
+#lista-itens-body td:nth-child(1) {
+    width: 35% !important;
+    text-align: left !important;
 }
 
 
-.tabela-itens th:nth-child(4),
-.tabela-itens td.col-excluir {
-    width: 15%;
-    text-align: center;
+#tabela-itens th:nth-child(2),
+#lista-itens-body td:nth-child(2) {
+    width: 25% !important;
+    text-align: left !important;
 }
 
-.tabela-itens{
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; 
+
+#tabela-itens th:nth-child(3),
+#lista-itens-body td:nth-child(3) {
+    width: 25% !important;
+    text-align: left !important;
+}
+
+
+#tabela-itens th:nth-child(4),
+#lista-itens-body td:nth-child(4) {
+    width: 15% !important;
+    text-align: center !important;
+}
+
+
+#lista-itens-body td:nth-child(4) .btn-danger {
+    width: auto !important;
+    max-width: 100%;
+    padding: 6px 15px !important;
+    margin: 0 auto !important;
+    display: inline-block;
 }
