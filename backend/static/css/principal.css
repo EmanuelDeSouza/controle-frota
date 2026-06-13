@@ -458,3 +458,17 @@ btn-relatorio:hover {
 .card table th:nth-child(5) {
   text-align: center;
 }
+
+.tabela-itens th:nth-child(1),
+.tabela-itens th:nth-child(2),
+.tabela-itens th:nth-child(3),
+.tabela-itens th:nth-child(4){
+  width: 15%;
+  text-align: center;
+}
+
+.tabela-itens{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; 
+}
