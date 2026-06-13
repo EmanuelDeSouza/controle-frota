@@ -115,8 +115,7 @@ def cadastro():
 
 @app.route('/logout')
 def logout():
-    session.clear()
-    flash("Logout realizado com sucesso.")
+    session.clear() 
     return redirect(url_for('login'))
 
 with app.app_context():
