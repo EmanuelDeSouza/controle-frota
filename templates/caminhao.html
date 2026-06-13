@@ -52,7 +52,6 @@
       <option value="item">Selecionar item do estoque</option>
     </select>
 
-    <!-- Aparece apenas quando "item" é selecionado -->
     <div id="campoSelectItem" style="display:none;">
       <label>Item:</label>
       <select id="itemSelecionado" onchange="preencherValorItem()">
@@ -116,6 +115,25 @@
 
     <button type="button" onclick="salvarAbastecimento()">Salvar</button>
     <button type="button" onclick="fecharModalAbastecimento()">Cancelar</button>
+  </div>
+</div>
+
+<div id="modalListaAbastecimentos" class="modal" style="display:none;">
+  <div class="modal-content" style="width: 600px;">
+    <h3>⛽ Histórico de Abastecimentos do Caminhão</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Litros</th>
+          <th>Valor Total</th>
+          <th>KM Atual</th>
+          <th>Data</th>
+          <th>Ações</th> </tr>
+      </thead>
+      <tbody id="tbodyAbastecimentos"></tbody>
+    </table>
+    <h4 class="totalAbastecimentos" style="margin-top:15px; text-align:right;">Total: R$ 0.00</h4>
+    <button type="button" onclick="fecharModalListaAbastecimentos()">Fechar</button>
   </div>
 </div>
 

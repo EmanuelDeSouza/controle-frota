@@ -3,147 +3,112 @@ document.addEventListener("DOMContentLoaded", () => {
     const listaBody = document.getElementById("lista-caminhoes-body");
     const listaVazia = document.getElementById("lista-vazia-msg");
     const corpoTabelaItens = document.getElementById('lista-itens-body');
-    
 
     // ==========================================
     // 🚚 CONTEXTO: CAMINHÕES
     // ==========================================
 
-    // Listar Caminhões
     // === Carregar caminhões ===
     async function carregarCaminhoes() {
-      // Se NÃO encontrar a tabela de caminhões na página atual, sai da função sem quebrar o código
-      if (!listaBody) return; 
-
-      try {
-        const resposta = await fetch("/api/caminhoes");
-        const caminhoes = await resposta.json();
-
-        listaBody.innerHTML = "";
-
-        if (caminhoes.length === 0) {
-          if (listaVazia) listaVazia.style.display = "block";
-        } else {
-          if (listaVazia) listaVazia.style.display = "none";
-          caminhoes.forEach(c => {
-            const linha = document.createElement("tr");
-            linha.innerHTML = `
-              <td>${c.placa}</td>
-              <td>${c.fabricante}</td>
-              <td>${c.modelo}</td>
-              <td>${c.ano}</td>
-              <td>${c.prefixo || '---'}</td>
-              <td>${c.chassi || '---'}</td>
-              <td>
-                <div class="dropdown">
-                    <button class="btn-acoes">Ações ▾</button>
-                    <div class="dropdown-menu">
-                    <button class="add-expense" data-id="${c.id}">💰 Adicionar Gasto</button>
-                    <button class="abastecer" data-id="${c.id}">⛽ Registrar Abastecimento</button>
-                    <button class="dropdown-item" onclick="abrirModalReceita(${c.id})">💵 Registrar Receita</button>
-                    <button class="ver-gastos" data-id="${c.id}">📋 Ver Gastos</button>
-                    <button class="dropdown-item" onclick="listarReceitas(${c.id})">📈 Ver Receitas</button>
-                    <button class="excluir" data-id="${c.id}">🗑️ Excluir Caminhão</button>
-                    
-                    
-                    </div>
-                </div>
-                </td>
-            `;
-            listaBody.appendChild(linha);
-          });
-        }
-      } catch (erro) {
-         console.error("Erro ao carregar caminhões:", erro);
-      }
-    }
-
-    // Cadastro de Caminhões
-
-    // Cadastro de Caminhões
-    // CORREÇÃO: Buscando pelo ID correto 'btnSalvarCaminhao' que colocamos no HTML
-    const btnSalvarCaminhao = document.getElementById("btnSalvarCaminhao");
-if (btnSalvarCaminhao) {
-    btnSalvarCaminhao.addEventListener("click", async (e) => {
-        e.preventDefault();
-        
-        
-
-        const dadosCaminhao = {
-            placa: document.getElementById("placa").value.trim(),
-            modelo: document.getElementById("modelo").value.trim(),
-            fabricante: document.getElementById("fabricante").value.trim(),
-            ano: parseInt(document.getElementById("ano").value),
-            prefixo: document.getElementById("prefixo").value.trim(),
-            chassi: document.getElementById("chassi").value.trim()
-        };
-
-       
+        if (!listaBody) return; 
 
         try {
-            const resposta = await fetch("/api/caminhoes", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dadosCaminhao)
-            });
+            const resposta = await fetch("/api/caminhoes");
+            const caminhoes = await resposta.json();
 
-    
+            listaBody.innerHTML = "";
 
-            const resultado = await resposta.json();
-            if (resposta.ok) {
-                document.getElementById("formCaminhao").reset(); 
-                carregarCaminhoes(); 
+            if (caminhoes.length === 0) {
+                if (listaVazia) listaVazia.style.display = "block";
             } else {
-                alert("Erro no cadastro" + (resultado.erro || "Erro desconhecido"));
+                if (listaVazia) listaVazia.style.display = "none";
+                caminhoes.forEach(c => {
+                    const linha = document.createElement("tr");
+                    linha.innerHTML = `
+                        <td>${c.placa}</td>
+                        <td>${c.fabricante}</td>
+                        <td>${c.modelo}</td>
+                        <td>${c.ano}</td>
+                        <td>${c.prefixo || '---'}</td>
+                        <td>${c.chassi || '---'}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn-acoes">Ações ▾</button>
+                                <div class="dropdown-menu">
+                                    <button class="add-expense" data-id="${c.id}">💰 Adicionar Gasto</button>
+                                    <button class="abastecer" data-id="${c.id}">⛽ Registrar Abastecimento</button>
+                                    <button class="dropdown-item" onclick="abrirModalReceita(${c.id})">💵 Registrar Receita</button>
+                                    <button class="ver-gastos" data-id="${c.id}">📋 Ver Gastos</button>
+                                    <button class="dropdown-item" onclick="listarReceitas(${c.id})">📈 Ver Receitas</button>
+                                    <button onclick="deletarCaminhao(${c.id})" class="btn-danger">Excluir Caminhão</button>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    listaBody.appendChild(linha);
+                });
             }
         } catch (erro) {
-            alert("Passo 4 FALHOU: O JavaScript não conseguiu falar com o servidor. Erro: " + erro);
+            console.error("Erro ao carregar caminhões:", erro);
         }
-    });
-} 
+    }
 
-    // Ações da Lista de Caminhões (Excluir, Adicionar Gasto, Ver Gastos)
+    // === Cadastro de Caminhões ===
+    const btnSalvarCaminhao = document.getElementById("btnSalvarCaminhao");
+    if (btnSalvarCaminhao) {
+        btnSalvarCaminhao.addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            const dadosCaminhao = {
+                placa: document.getElementById("placa").value.trim(),
+                modelo: document.getElementById("modelo").value.trim(),
+                fabricante: document.getElementById("fabricante").value.trim(),
+                ano: parseInt(document.getElementById("ano").value),
+                prefixo: document.getElementById("prefixo").value.trim(),
+                chassi: document.getElementById("chassi").value.trim()
+            };
+
+            try {
+                const resposta = await fetch("/api/caminhoes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dadosCaminhao)
+                });
+
+                const resultado = await resposta.json();
+                if (resposta.ok) {
+                    document.getElementById("formCaminhao").reset(); 
+                    carregarCaminhoes(); 
+                } else {
+                    alert("Erro no cadastro: " + (resultado.erro || "Erro desconhecido"));
+                }
+            } catch (erro) {
+                alert("O JavaScript não conseguiu falar com o servidor. Erro: " + erro);
+            }
+        });
+    } 
+
+    // === Eventos da Lista de Caminhões ===
     if (listaBody) {
         listaBody.addEventListener("click", async (event) => {
             const id = event.target.dataset.id;
             if (!id) return;
 
-            // Opção: Excluir
-            if (event.target.classList.contains("excluir")) {
-                const confirmar = confirm("Tem certeza que deseja excluir este caminhão?");
-                if (!confirmar) return;
-
-                const resposta = await fetch(`/api/caminhoes/${id}`, { method: "DELETE" });
-                const dados = await resposta.json();
-
-                if (resposta.ok) {
-                    alert(dados.mensagem);
-                    carregarCaminhoes();
-                } else {
-                    alert(dados.erro || "Erro ao excluir caminhão");
-                }
-            }
-
-            
             if (event.target.classList.contains("add-expense")) {
                 abrirModalGasto(id);
             }
-
-            
             if (event.target.classList.contains("ver-gastos")) {
                 listarGastos(id);
             }
-
             if (event.target.classList.contains("abastecer")) {
-            abrirModalAbastecimento(id);
-
+                abrirModalAbastecimento(id);
+            }
             if (event.target.classList.contains("add-receita")) {
-            abrirModalReceita(id);
-}
+                abrirModalReceita(id);
+            }
             if (event.target.classList.contains("ver-receitas")) {
-            listarReceitas(id);
-}
-}
+                listarReceitas(id);
+            }
         });
     }
 
@@ -151,86 +116,89 @@ if (btnSalvarCaminhao) {
     // 🔧 CONTEXTO: ITENS DE MANUTENÇÃO
     // ==========================================
 
-    // Listar Itens
+    // === Listar Itens (Atualizado com botão Excluir) ===
     async function listarItens() {
-    if (!corpoTabelaItens) return;
+        if (!corpoTabelaItens) return;
 
-    try {
-        const resposta = await fetch('/api/itens');
-        const itens = await resposta.json();
+        try {
+            const resposta = await fetch('/api/itens');
+            const itens = await resposta.json();
 
-        corpoTabelaItens.innerHTML = '';
+            corpoTabelaItens.innerHTML = '';
 
-        if (itens.length === 0) {
-            if (listaVazia) listaVazia.style.display = 'block';
-            return;
+            if (itens.length === 0) {
+                if (listaVazia) listaVazia.style.display = 'block';
+                return;
+            }
+
+            if (listaVazia) listaVazia.style.display = 'none';
+
+            itens.forEach(item => {
+                const linha = document.createElement("tr");
+                linha.innerHTML = `
+                    <td>${item.nome}</td>
+                    <td>R$ ${parseFloat(item.valor_unitario).toFixed(2)}</td>
+                    <td>${item.categoria || '---'}</td>
+                    <td>
+                        <button onclick="excluirItem(${item.id})" class="btn-danger">
+                            <i class="fas fa-trash-alt"></i> Excluir
+                        </button>
+                    </td>
+                `;
+                corpoTabelaItens.appendChild(linha);
+            });
+        } catch (err) {
+            console.error("Erro ao listar itens:", err);
         }
-
-        if (listaVazia) listaVazia.style.display = 'none';
-
-        itens.forEach(item => {
-            const linha = document.createElement("tr");
-            linha.innerHTML = `
-                <td>${item.nome}</td>
-                <td>R$ ${parseFloat(item.valor_unitario).toFixed(2)}</td>
-                <td>${item.categoria || '---'}</td>
-            `;
-            corpoTabelaItens.appendChild(linha);
-        });
-
-    } catch (err) {
-        console.error("Erro ao listar itens:", err);
     }
-}
+    
+    async function carregarCaminhoesNoSelect() {
+        const select = document.getElementById('placaSelect');
+        if (!select) return;
 
-async function carregarCaminhoesNoSelect() {
-    const select = document.getElementById('placaSelect');
-    if (!select) return;
+        try {
+            const resposta = await fetch('/api/caminhoes');
+            const caminhoes = await resposta.json();
 
-    try {
-        const resposta = await fetch('/api/caminhoes');
-        const caminhoes = await resposta.json();
-
-        caminhoes.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c.placa;
-            option.textContent = `${c.placa} — ${c.modelo}`;
-            select.appendChild(option);
-        });
-    } catch (err) {
-        console.error("Erro ao carregar caminhões no select:", err);
+            caminhoes.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c.placa;
+                option.textContent = `${c.placa} — ${c.modelo}`;
+                select.appendChild(option);
+            });
+        } catch (err) {
+            console.error("Erro ao carregar caminhões no select:", err);
+        }
     }
-}
 
-async function carregarItensNoSelect() {
-    const select = document.getElementById('itemSelect');
-    if (!select) return;
+    async function carregarItensNoSelect() {
+        const select = document.getElementById('itemSelect');
+        if (!select) return;
 
-    try {
-        const response = await fetch('/api/itens');
-        if (!response.ok) return;
+        try {
+            const response = await fetch('/api/itens');
+            if (!response.ok) return;
 
-        const itens = await response.json();
-        select.innerHTML = '<option value="todos">Todos os Itens</option>';
+            const itens = await response.json();
+            select.innerHTML = '<option value="todos">Todos os Itens</option>';
 
-        itens.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.nome;
-            option.textContent = item.nome;
-            select.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Erro ao carregar itens no select:", error);
+            itens.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.nome;
+                option.textContent = item.nome;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Erro ao carregar itens no select:", error);
+        }
     }
-}
 
-    // Cadastrar Item
+    // === Cadastrar Item ===
     const btnSalvarItem = document.getElementById("btnSalvarItem") || document.getElementById("btn-cadastro");
     if (btnSalvarItem) {
         btnSalvarItem.addEventListener("click", async (e) => {
             e.preventDefault();
 
-            // Mapeia os inputs tentando os dois padrões de ID que você usou no seu código
             const inputNome = document.getElementById("nomeItem") || document.querySelector('input[name="name"]');
             const inputValor = document.getElementById("valorUnitario") || document.querySelector('input[name="Value"]');
             const inputCategoria = document.getElementById("categoriaItem") || document.querySelector('input[name="Category"]');
@@ -259,8 +227,8 @@ async function carregarItensNoSelect() {
                     alert("Item cadastrado com sucesso!");
                     const form = document.getElementById("formItem") || document.getElementById("truckForm");
                     if (form) form.reset();
-                    listarItens(); // Atualiza a tabela na hora
-                    carregarItensNoSelect(); // Atualiza o select do relatório se ele existir na tela
+                    listarItens(); 
+                    carregarItensNoSelect(); 
                 } else {
                     alert(`Erro: ${resultado.error || "Não foi possível cadastrar o item."}`);
                 }
@@ -271,91 +239,85 @@ async function carregarItensNoSelect() {
         });
     }
 
-
     // ==========================================
     // 📈 CONTEXTO: RELATÓRIOS
     // ==========================================
 
-    
-   
-
-    // Evento de gerar relatório
     const btnGerarRelatorio = document.getElementById("btnGerarRelatorio");
-if (btnGerarRelatorio) {
-    btnGerarRelatorio.addEventListener("click", async () => {
-        const inicio = document.getElementById("dataInicial").value;
-        const fim = document.getElementById("dataFinal").value;
-        const placa = document.getElementById("placaSelect")?.value || "todos";
-        const tipo = document.getElementById("tipoSelect")?.value || "todos";
+    if (btnGerarRelatorio) {
+        btnGerarRelatorio.addEventListener("click", async () => {
+            const inicio = document.getElementById("dataInicial").value;
+            const fim = document.getElementById("dataFinal").value;
+            const placa = document.getElementById("placaSelect")?.value || "todos";
+            const tipo = document.getElementById("tipoSelect")?.value || "todos";
 
-        if (!inicio || !fim) {
-            alert("Selecione as datas inicial e final.");
-            return;
-        }
-
-        try {
-            const url = `/api/relatorio/gastos_detalhado?data_inicial=${inicio}&data_final=${fim}&placa=${placa}&tipo=${tipo}`;
-            const resposta = await fetch(url);
-            if (!resposta.ok) throw new Error("Erro ao carregar relatório");
-
-            const dados = await resposta.json();
-
-            if (dados.length === 0) {
-                alert("Nenhum gasto encontrado para os filtros selecionados.");
+            if (!inicio || !fim) {
+                alert("Selecione as datas inicial e final.");
                 return;
             }
 
-            let total = 0;
-            const corTipo = t => t === 'Abastecimento' ? '#1565C0' :
-                                  t === 'Manutenção' ? '#F57C00' :
-                                  t === 'Pedágio' ? '#6a1b9a' : '#888';
+            try {
+                const url = `/api/relatorio/gastos_detalhado?data_inicial=${inicio}&data_final=${fim}&placa=${placa}&tipo=${tipo}`;
+                const resposta = await fetch(url);
+                if (!resposta.ok) throw new Error("Erro ao carregar relatório");
 
-            let tabela = `
-                <table border="1" class="tabela-relatorio" style="width:100%; border-collapse:collapse; margin-top:20px;">
-                    <thead>
-                        <tr>
-                            <th>Placa</th>
-                            <th>Descrição</th>
-                            <th>Tipo</th>
-                            <th>Data</th>
-                            <th>Valor (R$)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+                const dados = await resposta.json();
 
-            dados.forEach(g => {
-                const dataFormatada = g.data.split("-").reverse().join("/");
-                total += parseFloat(g.valor);
-                tabela += `
-                    <tr>
-                        <td>${g.placa}</td>
-                        <td>${g.descricao}</td>
-                        <td style="color:${corTipo(g.tipo)}; font-weight:600;">${g.tipo}</td>
-                        <td>${dataFormatada}</td>
-                        <td>R$ ${parseFloat(g.valor).toFixed(2)}</td>
-                    </tr>
+                if (dados.length === 0) {
+                    alert("Nenhum gasto encontrado para os filtros selecionados.");
+                    return;
+                }
+
+                let total = 0;
+                const corTipo = t => t === 'Abastecimento' ? '#1565C0' :
+                                      t === 'Manutenção' ? '#F57C00' :
+                                      t === 'Pedágio' ? '#6a1b9a' : '#888';
+
+                let tabela = `
+                    <table border="1" class="tabela-relatorio" style="width:100%; border-collapse:collapse; margin-top:20px;">
+                        <thead>
+                            <tr>
+                                <th>Placa</th>
+                                <th>Descrição</th>
+                                <th>Tipo</th>
+                                <th>Data</th>
+                                <th>Valor (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            });
 
-            tabela += `
-                    </tbody>
-                </table>
-                <h3 style="margin-top:15px; text-align:right;">
-                    Total: <strong>R$ ${total.toFixed(2)}</strong>
-                </h3>
-            `;
+                dados.forEach(g => {
+                    const dataFormatada = g.data.split("-").reverse().join("/");
+                    total += parseFloat(g.valor);
+                    tabela += `
+                        <tr>
+                            <td>${g.placa}</td>
+                            <td>${g.descricao}</td>
+                            <td style="color:${corTipo(g.tipo)}; font-weight:600;">${g.tipo}</td>
+                            <td>${dataFormatada}</td>
+                            <td>R$ ${parseFloat(g.valor).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
 
-            document.getElementById("resultadoRelatorio").innerHTML = tabela;
+                tabela += `
+                        </tbody>
+                    </table>
+                    <h3 style="margin-top:15px; text-align:right;">
+                        Total: <strong>R$ ${total.toFixed(2)}</strong>
+                    </h3>
+                `;
 
-        } catch (err) {
-            console.error("Erro no relatório:", err);
-            alert("Erro ao gerar relatório. Verifique o console.");
-        }
-    });
-}
+                document.getElementById("resultadoRelatorio").innerHTML = tabela;
 
-    // Fechar Popup do Relatório
+            } catch (err) {
+                console.error("Erro no relatório:", err);
+                alert("Erro ao gerar relatório. Verifique o console.");
+            }
+        });
+    }
+
     const btnFecharRelatorio = document.getElementById("fecharPopup");
     if (btnFecharRelatorio) {
         btnFecharRelatorio.onclick = () => {
@@ -363,14 +325,16 @@ if (btnGerarRelatorio) {
         };
     }
 
-    // ==========================================
-    // 🚀 INICIALIZAÇÃO DA PÁGINA
-    // ==========================================
+    // === Execuções Iniciais ===
     carregarCaminhoes();
     listarItens();
     carregarItensNoSelect();
     carregarCaminhoesNoSelect();
 });
+
+// ==========================================
+// 🧮 FUNÇÕES GLOBAIS (CHAMADAS EXTERNAS)
+// ==========================================
 
 async function carregarItensNoModalGasto() {
     const select = document.getElementById("itemSelecionado");
@@ -394,8 +358,7 @@ async function carregarItensNoModalGasto() {
 
 function alternarTipoGasto() {
     const tipo = document.getElementById("categoriaGasto").value;
-    document.getElementById("campoSelectItem").style.display =
-        tipo === "item" ? "block" : "none";
+    document.getElementById("campoSelectItem").style.display = tipo === "item" ? "block" : "none";
 
     if (tipo !== "item") {
         document.getElementById("descricaoGasto").value = "";
@@ -411,25 +374,25 @@ function preencherValorItem() {
     document.getElementById("valorGasto").value = parseFloat(opcao.dataset.valor).toFixed(2);
 }
 
-
-// ==========================================
-// 🧮 FUNÇÕES GLOBAIS (CHAMADAS VIA ONCLICK NO HTML)
-// ==========================================
-async function excluirGasto(gastoId, caminhaoId) {
-    if (!confirm("Excluir este gasto?")) return;
-
-    const resposta = await fetch(`/api/gastos/${gastoId}`, { method: "DELETE" });
-    const result = await resposta.json();
-
-    if (resposta.ok) {
-        alert(result.message || "Gasto excluído!");
-        listarGastos(caminhaoId); // atualiza a lista
-    } else {
-        alert(result.error || "Erro ao excluir.");
+// === CRUD: Caminhão ===
+async function deletarCaminhao(id) {
+    if (!confirm("Tem certeza que deseja excluir este caminhão e todos os seus registros históricos?")) return;
+    try {
+        const resposta = await fetch(`/api/caminhoes/${id}`, { method: "DELETE" });
+        const dados = await resposta.json();
+        if (resposta.ok) {
+            alert(dados.mensagem || "Caminhão excluído!");
+            location.reload();
+        } else {
+            alert(dados.erro || "Erro ao excluir caminhão.");
+        }
+    } catch (err) {
+        console.error(err);
     }
 }
 
-function abrirModalGasto(caminhaoId) {
+// === CRUD: Gastos ===
+async function abrirModalGasto(caminhaoId) {
     document.getElementById("caminhaoIdGasto").value = caminhaoId;
     document.getElementById("categoriaGasto").value = "Manutenção";
     document.getElementById("campoSelectItem").style.display = "none";
@@ -448,7 +411,7 @@ async function salvarGasto() {
     const descricao = document.getElementById("descricaoGasto").value;
     const valor = document.getElementById("valorGasto").value;
     const data = document.getElementById("dataGasto").value;
-    const tipo = document.getElementById("categoriaGasto").value; // ← novo
+    const tipo = document.getElementById("categoriaGasto").value; 
 
     if (!descricao || !valor || !data) {
         alert("Preencha todos os campos do gasto!");
@@ -459,7 +422,7 @@ async function salvarGasto() {
         const resposta = await fetch(`/api/caminhoes/${caminhaoId}/gastos`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ descricao, valor, data, tipo }) // ← tipo incluído
+            body: JSON.stringify({ descricao, valor, data, tipo }) 
         });
 
         const result = await resposta.json();
@@ -485,18 +448,18 @@ async function listarGastos(caminhaoId) {
         const gastos = await resGastos.json();
         const abastecimentos = await resAbast.json();
 
+        // Mapeando abastecimentos na lista mista de gastos
         const abastFormatados = abastecimentos.map(a => ({
             id: a.id,
+            caminhao_id: caminhaoId,
             descricao: `Abastecimento — ${a.litros}L`,
             tipo: 'Abastecimento',
             valor: a.valor,
             data: a.data,
-            is_abastecimento: true  // flag para não mostrar botão excluir por enquanto
+            is_abastecimento: true  
         }));
         
-        const tudo = [...gastos, ...abastFormatados].sort((a, b) =>
-            new Date(b.data) - new Date(a.data)
-        );
+        const tudo = [...gastos, ...abastFormatados].sort((a, b) => new Date(b.data) - new Date(a.data));
 
         const modal = document.getElementById("modalListaGastos");
         const tbody = modal.querySelector("tbody");
@@ -511,15 +474,16 @@ async function listarGastos(caminhaoId) {
                             g.tipo === 'Manutenção' ? '#F57C00' :
                             g.tipo === 'Pedágio' ? '#6a1b9a' : '#888';
 
+            // CORREÇÃO: Ajustado strings, ids e habilitado o botão de exclusão de abastecimento na lista unificada
             linha.innerHTML = `
                 <td>${g.descricao}</td>
                 <td><span style="color:${corTipo}; font-weight:600;">${g.tipo || '---'}</span></td>
                 <td>R$ ${parseFloat(g.valor).toFixed(2)}</td>
                 <td>${g.data.split('-').reverse().join('/')}</td>
                 <td>
-                    ${!g.is_abastecimento
-                        ? `<button type="button" onclick="excluirGasto(${g.id}, ${caminhaoId})">🗑️ Excluir</button>`
-                        : '---'
+                    ${g.is_abastecimento
+                        ? `<button onclick="deletarAbastecimento(${g.id}, ${g.caminhao_id})" class="btn-danger">Excluir</button>`
+                        : `<button onclick="excluirGasto(${g.id}, ${caminhaoId})" class="btn-danger">Excluir</button>`
                     }
                 </td>
             `;
@@ -539,6 +503,7 @@ function fecharModalListaGastos() {
     document.getElementById("modalListaGastos").style.display = "none";
 }
 
+// === CRUD: Abastecimentos ===
 function abrirModalAbastecimento(caminhaoId) {
     document.getElementById("caminhaoIdAbastecimento").value = caminhaoId;
     document.getElementById("modalAbastecimento").style.display = "flex";
@@ -584,108 +549,143 @@ async function salvarAbastecimento() {
     }
 }
 
+async function deletarAbastecimento(id, caminhaoId) {
+    if (!confirm("Tem certeza que deseja excluir este abastecimento?")) return;
+    try {
+        const resposta = await fetch(`/api/abastecimentos/${id}`, { method: "DELETE" });
+        const result = await resposta.json();
+        if (resposta.ok) {
+            alert(result.message || "Abastecimento excluído!");
+            listarGastos(caminhaoId); // Atualiza o histórico imediatamente
+        } else {
+            alert(result.error || "Erro ao excluir abastecimento.");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// === CRUD: Receitas ===
 function abrirModalReceita(caminhaoId) {
-        console.log("abrirModalReceita chamado com o ID do caminhão:", caminhaoId);
-        document.getElementById("caminhaoIdReceita").value = caminhaoId;
-        document.getElementById("descricaoReceita").value = "";
-        document.getElementById("valorReceita").value = "";
-        document.getElementById("dataReceita").value = "";
-        document.getElementById("modalReceita").style.display = "flex";
+    document.getElementById("caminhaoIdReceita").value = caminhaoId;
+    document.getElementById("descricaoReceita").value = "";
+    document.getElementById("valorReceita").value = "";
+    document.getElementById("dataReceita").value = "";
+    document.getElementById("modalReceita").style.display = "flex";
+}
+
+function fecharModalReceita() {
+    document.getElementById("modalReceita").style.display = "none";
+}
+
+async function salvarReceita() {
+    const caminhaoId = document.getElementById("caminhaoIdReceita").value;
+    const descricao = document.getElementById("descricaoReceita").value;
+    const valor = document.getElementById("valorReceita").value;
+    const data = document.getElementById("dataReceita").value;
+
+    if (!descricao || !valor || !data) {
+        alert("Preencha todos os campos!");
+        return;
     }
 
-    function fecharModalReceita() {
-        document.getElementById("modalReceita").style.display = "none";
-    }
+    try {
+        const resposta = await fetch(`/api/caminhoes/${caminhaoId}/receitas`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ descricao, valor, data })
+        });
 
-    async function salvarReceita() {
-        const caminhaoId = document.getElementById("caminhaoIdReceita").value;
-        const descricao = document.getElementById("descricaoReceita").value;
-        const valor = document.getElementById("valorReceita").value;
-        const data = document.getElementById("dataReceita").value;
-
-        if (!descricao || !valor || !data) {
-            alert("Preencha todos os campos!");
-            return;
+        const result = await resposta.json();
+        if (resposta.ok) {
+            alert(result.message || "Receita registrada!");
+            fecharModalReceita();
+        } else {
+            alert(result.error || "Erro ao registrar receita!");
         }
-
-        try {
-            const resposta = await fetch(`/api/caminhoes/${caminhaoId}/receitas`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ descricao, valor, data })
-            });
-
-            const result = await resposta.json();
-            if (resposta.ok) {
-                alert(result.message || "Receita registrada!");
-                fecharModalReceita();
-                location.reload(); // Recarrega para o dashboard computar as mudanças
-            } else {
-                alert(result.error || "Erro ao registrar receita!");
-            }
-        } catch (erro) {
-            console.error("Erro:", erro);
-            alert("Falha ao comunicar com o servidor.");
-        }
+    } catch (erro) {
+        console.error("Erro:", erro);
+        alert("Falha ao comunicar com o servidor.");
     }
+}
 
-    async function listarReceitas(caminhaoId) {
-        console.log("listarReceitas chamado com o ID do caminhão:", caminhaoId);
-        try {
-            const resposta = await fetch(`/api/caminhoes/${caminhaoId}/receitas`);
-            const receitas = await resposta.json();
+async function listarReceitas(caminhaoId) {
+    try {
+        const resposta = await fetch(`/api/caminhoes/${caminhaoId}/receitas`);
+        const receitas = await resposta.json();
 
-            const modal = document.getElementById("modalListaReceitas");
-            const tbody = document.getElementById("tbodyReceitas");
-            const totalEl = modal.querySelector(".totalReceitas");
+        const modal = document.getElementById("modalListaReceitas");
+        const tbody = document.getElementById("tbodyReceitas");
+        const totalEl = modal.querySelector(".totalReceitas");
 
-            tbody.innerHTML = "";
-            let total = 0;
+        tbody.innerHTML = "";
+        let total = 0;
 
-            receitas.forEach(r => {
-                const linha = document.createElement("tr");
-                // Garante que a data do backend formate corretamente na inversão por hífens
-                const dataFormatada = r.data.includes(' ') ? r.data.split(' ')[0] : r.data;
-                const dataExibicao = dataFormatada.split('-').reverse().join('/');
+        receitas.forEach(r => {
+            const linha = document.createElement("tr");
+            const dataFormatada = r.data.includes(' ') ? r.data.split(' ')[0] : r.data;
+            const dataExibicao = dataFormatada.split('-').reverse().join('/');
 
-                linha.innerHTML = `
-                    <td>${r.descricao}</td>
-                    <td>R$ ${parseFloat(r.valor).toFixed(2)}</td>
-                    <td>${dataExibicao}</td>
-                    <td>
-                        <button type="button" onclick="excluirReceita(${r.id}, ${caminhaoId})">🗑️ Excluir</button>
-                    </td>
-                `;
-                total += parseFloat(r.valor);
-                tbody.appendChild(linha);
-            });
+            linha.innerHTML = `
+                <td>${r.descricao}</td>
+                <td>R$ ${parseFloat(r.valor).toFixed(2)}</td>
+                <td>${dataExibicao}</td>
+                <td>
+                    <button onclick="excluirReceita(${r.id}, ${caminhaoId})" class="btn-danger">Excluir</button>
+                </td>
+            `;
+            total += parseFloat(r.valor);
+            tbody.appendChild(linha);
+        });
 
-            totalEl.textContent = `Total: R$ ${total.toFixed(2)}`;
-            modal.style.display = "flex";
-        } catch (erro) {
-            console.error("Erro:", erro);
-            alert("Não foi possível carregar as receitas.");
-        }
+        totalEl.textContent = `Total: R$ ${total.toFixed(2)}`;
+        modal.style.display = "flex";
+    } catch (erro) {
+        console.error("Erro:", erro);
+        alert("Não foi possível carregar as receitas.");
     }
+}
 
-    function fecharModalListaReceitas() {
-        document.getElementById("modalListaReceitas").style.display = "none";
-    }
+function fecharModalListaReceitas() {
+    document.getElementById("modalListaReceitas").style.display = "none";
+}
 
-    async function excluirReceita(receitaId, caminhaoId) {
-        if (!confirm("Excluir esta receita?")) return;
+async function excluirReceita(receitaId, caminhaoId) {
+    if (!confirm("Excluir esta receita?")) return;
 
-        try {
-            const resposta = await fetch(`/api/receitas/${receitaId}`, { method: "DELETE" });
-            const result = await resposta.json();
+    try {
+        const resposta = await fetch(`/api/receitas/${receitaId}`, { method: "DELETE" });
+        const result = await resposta.json();
 
-            if (resposta.ok) {
-                alert(result.message || "Receita excluída!");
-                listarReceitas(caminhaoId);
-            } else {
-                alert(result.error || "Erro ao excluir.");
-            }
-        } catch (erro) {
-            console.error("Erro no fetch de exclusão:", erro);
+        if (resposta.ok) {
+            alert(result.message || "Receita excluída!");
+            listarReceitas(caminhaoId);
+        } else {
+            alert(result.error || "Erro ao excluir.");
         }
-} 
+    } catch (erro) {
+        console.error("Erro no fetch de exclusão:", erro);
+    }
+}
+
+async function excluirItem(itemId) {
+    if (!confirm("Tem certeza que deseja excluir este item de manutenção? Isso não apagará os gastos já lançados, mas ele sumirá das opções de seleção.")) return;
+
+    try {
+        // Faz a requisição DELETE para a rota do seu backend
+        const resposta = await fetch(`/api/itens/${itemId}`, { method: "DELETE" });
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+            alert(dados.mensagem || "Item excluído com sucesso!");
+            
+            // Recarrega as listagens e os selects da tela para atualizar em tempo real
+            location.reload(); 
+        } else {
+            alert(dados.erro || "Erro ao excluir o item.");
+        }
+    } catch (erro) {
+        console.error("Erro ao tentar excluir item:", erro);
+        alert("Falha ao comunicar com o servidor.");
+    }
+}
