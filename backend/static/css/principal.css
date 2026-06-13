@@ -460,11 +460,30 @@ btn-relatorio:hover {
 }
 
 .tabela-itens th:nth-child(1),
+.tabela-itens td.col-nome {
+    width: 35%;
+    text-align: left;
+}
+
+
 .tabela-itens th:nth-child(2),
+.tabela-itens td.col-valor {
+    width: 25%;
+    text-align: left;
+}
+
+
 .tabela-itens th:nth-child(3),
-.tabela-itens th:nth-child(4){
-  width: 15%;
-  text-align: center;
+.tabela-itens td.col-categoria {
+    width: 25%;
+    text-align: left;
+}
+
+
+.tabela-itens th:nth-child(4),
+.tabela-itens td.col-excluir {
+    width: 15%;
+    text-align: center;
 }
 
 .tabela-itens{
