@@ -24,6 +24,10 @@ DB_NAME = os.environ.get('DB_NAME', 'projetofrota')
 senha_encoded = quote_plus(DB_PASSWORD)
 RENDER_DATABASE_URL = os.environ.get('DATABASE_URL')
 
+with app.app_context():
+    db.create_all()
+    print("Tabelas verificadas/criadas com sucesso no banco!")
+    
 if RENDER_DATABASE_URL:
     SQLALCHEMY_URL = RENDER_DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 else:
@@ -130,6 +134,4 @@ app.register_blueprint(relatorio_bp)
 app.register_blueprint(dashboard_bp)
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=not IS_PRODUCTION)
