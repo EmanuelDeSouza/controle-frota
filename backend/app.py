@@ -3,7 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import os
 from urllib.parse import quote_plus
 from datetime import datetime, timedelta
-from backend.models import db, Usuario, Caminhao, Gasto, Abastecimento, Item, Manutencao, ManutencaoItem
+from models import db, Usuario, Caminhao, Gasto, Abastecimento, Item, Manutencao, ManutencaoItem
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))  
