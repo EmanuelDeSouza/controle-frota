@@ -39,6 +39,10 @@ body {
   transition: 0.3s;
 }
 
+.sidebar a:hover{
+  background-color: #F57C00;
+}
+
 .btn-sair{
   display: block;
   color: white;
@@ -445,7 +449,7 @@ btn-relatorio:hover {
 
 .card table th:first-child,
 .card table th:nth-child(2) {
-  text-align: left;
+  text-align: center;
   padding-left: 20px;
 }
 
