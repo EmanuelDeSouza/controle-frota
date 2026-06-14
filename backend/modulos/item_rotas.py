@@ -52,16 +52,18 @@ def listar_itens():
             "categoria": i.categoria
         } for i in itens
     ])
-@item_bp.route('/api/itens/<int:item_id>', methods=['DELETE'])
-def deletar_item(item_id):
+
+@item_bp.route('/api/gastos/item/<int:id>', methods=['DELETE'])
+@item_bp.route('/api/gastos/manutencao/<int:id>', methods=['DELETE'])
+def excluir_gasto(id):
     try:
-        # Seu código para buscar o item no banco e deletar aqui...
-        item = Item.query.get(item_id)
-        if not item:
-            return jsonify({"erro": "Item não encontrado"}), 404
-            
-        db.session.delete(item)
+        gasto = Gasto.query.get(id)
+        if not gasto:
+            return jsonify({"erro": "Gasto não encontrado."}), 404
+        
+        db.session.delete(gasto)
         db.session.commit()
-        return jsonify({"mensagem": "Item excluído com sucesso!"}), 200
+        return jsonify({"mensagem": "Gasto excluído com sucesso!"}), 200
     except Exception as e:
-        return jsonify({"erro": str(e)}), 500
+        db.session.rollback()
+        return jsonify({"erro": f"Erro ao excluir: {str(e)}"}), 500

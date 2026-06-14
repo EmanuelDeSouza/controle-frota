@@ -163,26 +163,59 @@ def listar_abastecimentos(caminhao_id):
         'km_atual': float(a.km_atual)
     } for a in abastecimentos])
 
-@caminhao_bp.route('/api/gastos/<int:gasto_id>', methods=['DELETE'])
-def excluir_gasto(gasto_id):
+@caminhao_bp.route('/api/abastecimentos/<int:id>', methods=['DELETE'])
+@caminhao_bp.route('/api/gastos/abastecimento/<int:id>', methods=['DELETE'])
+def excluir_abastecimento(id):
     if 'usuario_id' not in session:
-        return jsonify({'error': 'Não autenticado'}), 401
+        return jsonify({'error': 'Não autorizado'}), 401
+    try:
+        registro = Abastecimento.query.get(id)
+        if not registro:
+            return jsonify({"erro": "Abastecimento não encontrado."}), 404
+        
+        db.session.delete(registro)
+        db.session.commit()
+        return jsonify({"mensagem": "Abastecimento excluído com sucesso!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"erro": f"Erro ao excluir abastecimento: {str(e)}"}), 500
 
-    gasto = Gasto.query.get(gasto_id)
-    if not gasto:
-        return jsonify({'error': 'Gasto não encontrado'}), 404
 
-    # Verifica se o caminhão pertence ao usuário logado
-    caminhao = Caminhao.query.filter_by(
-        id=gasto.caminhao_id,
-        usuario_id=session['usuario_id']
-    ).first()
-    if not caminhao:
-        return jsonify({'error': 'Não autorizado'}), 403
+@caminhao_bp.route('/api/gastos/item/<int:id>', methods=['DELETE'])
+@caminhao_bp.route('/api/gastos/manutencao/<int:id>', methods=['DELETE'])
+def excluir_gasto(id):
+    if 'usuario_id' not in session:
+        return jsonify({'error': 'Não autorizado'}), 401
+    try:
+        registro = Gasto.query.get(id)
+        if not registro:
+            return jsonify({"erro": "Gasto/Item não encontrado."}), 404
+        
+        db.session.delete(registro)
+        db.session.commit()
+        return jsonify({"mensagem": "Gasto excluído com sucesso!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"erro": f"Erro ao excluir gasto: {str(e)}"}), 500
 
-    db.session.delete(gasto)
-    db.session.commit()
-    return jsonify({'message': 'Gasto excluído com sucesso!'}), 200
+
+@caminhao_bp.route('/api/receitas/<int:id>', methods=['DELETE'])
+@caminhao_bp.route('/api/gastos/receita/<int:id>', methods=['DELETE'])
+def excluir_receita(id):
+    if 'usuario_id' not in session:
+        return jsonify({'error': 'Não autorizado'}), 401
+    try:
+        # Corrigido para buscar na tabela correta de Receita
+        registro = Receita.query.get(id)
+        if not registro:
+            return jsonify({"erro": "Receita não encontrada."}), 404
+            
+        db.session.delete(registro)
+        db.session.commit()
+        return jsonify({"mensagem": "Receita excluída com sucesso!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"erro": f"Erro ao excluir receita: {str(e)}"}), 500
 
 # ==================== RECEITA ====================
 
@@ -234,19 +267,3 @@ def listar_receitas_backend(caminhao_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@caminhao_bp.route('/api/receitas/<int:receita_id>', methods=['DELETE'])
-def excluir_receita_backend(receita_id):
-    if 'usuario_id' not in session:
-        return jsonify({'error': 'Usuário não autenticado'}), 401
-        
-    try:
-        receita = Receita.query.get(receita_id)
-        if not receita:
-            return jsonify({'error': 'Receita não encontrada'}), 404
-            
-        db.session.delete(receita)
-        db.session.commit()
-        return jsonify({'message': 'Receita excluída com sucesso!'}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
