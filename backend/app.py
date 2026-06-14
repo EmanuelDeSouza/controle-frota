@@ -17,7 +17,7 @@ IS_PRODUCTION = os.environ.get('RENDER') is not None
 
 DB_USER = os.environ.get('DB_USER', 'postgres')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'projetosema') 
-DB_HOST = os.environ.get('DB_HOST', 'localhost')  
+DB_HOST = os.environ.get('DB_HOST', 'localhost')   
 DB_PORT = os.environ.get('DB_PORT', '5432')       
 DB_NAME = os.environ.get('DB_NAME', 'projetofrota')
 
@@ -26,21 +26,31 @@ RENDER_DATABASE_URL = os.environ.get('DATABASE_URL')
 
 
 if RENDER_DATABASE_URL:
+    
     SQLALCHEMY_URL = RENDER_DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+    
+    
+    if 'sslmode' not in SQLALCHEMY_URL:
+        if '?' in SQLALCHEMY_URL:
+            SQLALCHEMY_URL += '&sslmode=require'
+        else:
+            SQLALCHEMY_URL += '?sslmode=require'
 else:
     SQLALCHEMY_URL = f'postgresql://{DB_USER}:{senha_encoded}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True
+}
+
+
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'uma_chave_secreta_para_flash')
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
-app.config.update(
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax'
-)
-
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
@@ -48,17 +58,7 @@ app.config.update(
 )
 db.init_app(app)
 
-@app.route('/dashboard')
-def dashboard():  
-    return render_template('dashboard.html')
 
-@app.route('/caminhoes')
-def caminhoes():
-    return render_template('caminhao.html')
-
-@app.route('/relatorio')
-def relatorio():
-    return render_template('relatorio.html')
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -112,19 +112,45 @@ def logout():
     session.clear() 
     return redirect(url_for('login'))
 
+
+
+@app.route('/dashboard')
+def dashboard():  
+    return render_template('dashboard.html')
+
+@app.route('/caminhoes')
+def caminhoes():
+    return render_template('caminhao.html')
+
+@app.route('/relatorio')
+def relatorio():
+    return render_template('relatorio.html')
+
+
+
 @app.before_request
 def verificar_autenticacao_global():
     
-    rotas_publicas = ['login', 'cadastro', 'static']
+    if request.path.startswith('/static/'):
+        return
+
+    
+    rotas_publicas = ['login', 'cadastro']
     
     
-    if request.endpoint and request.endpoint not in rotas_publicas:
-        if 'usuario_id' not in session:
-            
-            if request.path.startswith('/api/'):
-                return jsonify({"erro": "Acesso não autorizado. Faça login."}), 401
-            
-            return redirect(url_for('login'))
+    if not request.endpoint or request.endpoint in rotas_publicas:
+        return
+    
+    
+    if 'usuario_id' not in session:
+        
+        if request.path.startswith('/api/'):
+            return jsonify({"erro": "Acesso não autorizado. Faça login."}), 401
+        
+        
+        return redirect(url_for('login'))
+
+
 
 with app.app_context():
     if not IS_PRODUCTION:
