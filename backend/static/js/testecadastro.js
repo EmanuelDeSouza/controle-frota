@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🔧 CONTEXTO: ITENS DE MANUTENÇÃO
     // ==========================================
 
-    // === Listar Itens (Atualizado com botão Excluir) ===
+    // === Listar Itens ===
     async function listarItens() {
         if (!corpoTabelaItens) return;
 
@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     listarItens(); 
                     carregarItensNoSelect(); 
                 } else {
-                    alert(`Erro: ${resultado.error || "Não foi possível cadastrar o item."}`);
+                    alert(`Erro: ${resultado.error || "Não foi possível cadastrar the item."}`);
                 }
             } catch (erro) {
                 console.error("Erro na requisição:", erro);
@@ -333,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
-// 🧮 FUNÇÕES GLOBAIS (CHAMADAS EXTERNAS)
+// 🧮 FUNÇÕES GLOBAIS (CHAMADAS EXTERNAS / INLINE HTML)
 // ==========================================
 
 async function carregarItensNoModalGasto() {
@@ -474,7 +474,7 @@ async function listarGastos(caminhaoId) {
                             g.tipo === 'Manutenção' ? '#F57C00' :
                             g.tipo === 'Pedágio' ? '#6a1b9a' : '#888';
 
-            // CORREÇÃO: Ajustado strings, ids e habilitado o botão de exclusão de abastecimento na lista unificada
+            // AJUSTADO: Passa corretamente o ID e o Tipo para a nova função global 'excluirGasto'
             linha.innerHTML = `
                 <td>${g.descricao}</td>
                 <td><span style="color:${corTipo}; font-weight:600;">${g.tipo || '---'}</span></td>
@@ -483,7 +483,7 @@ async function listarGastos(caminhaoId) {
                 <td>
                     ${g.is_abastecimento
                         ? `<button onclick="deletarAbastecimento(${g.id}, ${g.caminhao_id})" class="btn-danger">Excluir</button>`
-                        : `<button onclick="excluirGasto(${g.id}, ${caminhaoId})" class="btn-danger">Excluir</button>`
+                        : `<button onclick="excluirGasto(${g.id}, '${g.tipo}', ${caminhaoId})" class="btn-danger">Excluir</button>`
                     }
                 </td>
             `;
@@ -501,6 +501,44 @@ async function listarGastos(caminhaoId) {
 
 function fecharModalListaGastos() {
     document.getElementById("modalListaGastos").style.display = "none";
+}
+
+// === NOVA FUNÇÃO GLOBAL: Excluir Gasto Unificado (Item, Manutenção, etc.) ===
+async function excluirGasto(id, tipo, caminhaoId) {
+    if (!confirm(`Tem certeza que deseja excluir este registro de ${tipo}?`)) return;
+
+    let url = '';
+    const tipoNormalizado = tipo.toLowerCase().trim();
+
+    if (tipoNormalizado === 'item') {
+        url = `/api/gastos/item/${id}`;
+    } else if (tipoNormalizado === 'manutenção' || tipoNormalizado === 'manutencao') {
+        url = `/api/gastos/manutencao/${id}`;
+    } else if (tipoNormalizado === 'abastecimento') {
+        url = `/api/gastos/abastecimento/${id}`;
+    } else {
+        // Rota padrão por segurança caso venha outro tipo
+        url = `/api/gastos/item/${id}`; 
+    }
+
+    try {
+        const resposta = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (resposta.ok) {
+            alert("Registro excluído com sucesso!");
+            // Atualiza a listagem do modal atual sem fechar a janela na cara do usuário
+            listarGastos(caminhaoId); 
+        } else {
+            const erroDados = await resposta.json();
+            alert(`Erro do servidor: ${erroDados.erro || 'Não foi possível excluir.'}`);
+        }
+    } catch (erro) {
+        console.error("Erro na requisição:", erro);
+        alert("Falha ao comunicar com o servidor.");
+    }
 }
 
 // === CRUD: Abastecimentos ===
@@ -552,11 +590,12 @@ async function salvarAbastecimento() {
 async function deletarAbastecimento(id, caminhaoId) {
     if (!confirm("Tem certeza que deseja excluir este abastecimento?")) return;
     try {
+        // URL Corrigida para bater com o padrão de pluralidade do backend legado /api/abastecimentos/
         const resposta = await fetch(`/api/abastecimentos/${id}`, { method: "DELETE" });
         const result = await resposta.json();
         if (resposta.ok) {
             alert(result.message || "Abastecimento excluído!");
-            listarGastos(caminhaoId); // Atualiza o histórico imediatamente
+            listarGastos(caminhaoId); 
         } else {
             alert(result.error || "Erro ao excluir abastecimento.");
         }
@@ -672,14 +711,11 @@ async function excluirItem(itemId) {
     if (!confirm("Tem certeza que deseja excluir este item de manutenção? Isso não apagará os gastos já lançados, mas ele sumirá das opções de seleção.")) return;
 
     try {
-        // Faz a requisição DELETE para a rota do seu backend
         const resposta = await fetch(`/api/itens/${itemId}`, { method: "DELETE" });
         const dados = await resposta.json();
 
         if (resposta.ok) {
             alert(dados.mensagem || "Item excluído com sucesso!");
-            
-            // Recarrega as listagens e os selects da tela para atualizar em tempo real
             location.reload(); 
         } else {
             alert(dados.erro || "Erro ao excluir o item.");
