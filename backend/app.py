@@ -50,20 +50,14 @@ db.init_app(app)
 
 @app.route('/dashboard')
 def dashboard():  
-    if 'usuario_id' not in session:
-        return redirect(url_for('login'))
     return render_template('dashboard.html')
 
 @app.route('/caminhoes')
 def caminhoes():
-    if 'usuario_id' not in session:
-        return redirect(url_for('login'))
     return render_template('caminhao.html')
 
 @app.route('/relatorio')
 def relatorio():
-    if 'usuario_id' not in session:
-        return redirect(url_for('login'))
     return render_template('relatorio.html')
 
 @app.route('/', methods=['GET', 'POST'])
@@ -118,9 +112,24 @@ def logout():
     session.clear() 
     return redirect(url_for('login'))
 
+@app.before_request
+def verificar_autenticacao_global():
+    
+    rotas_publicas = ['login', 'cadastro', 'static']
+    
+    
+    if request.endpoint and request.endpoint not in rotas_publicas:
+        if 'usuario_id' not in session:
+            
+            if request.path.startswith('/api/'):
+                return jsonify({"erro": "Acesso não autorizado. Faça login."}), 401
+            
+            return redirect(url_for('login'))
+
 with app.app_context():
-    db.create_all()
-    print("Tabelas verificadas/criadas com sucesso no banco!")
+    if not IS_PRODUCTION:
+        db.create_all()
+        print("Tabelas verificadas/criadas com sucesso no banco local!")
     
 from modulos.caminhao_rotas import caminhao_bp
 from modulos.item_rotas import item_bp
