@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, session
 from datetime import datetime
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from models import db, Caminhao, Gasto, Abastecimento, Receita
+from models import db, Caminhao, Gasto, Abastecimento, Receita, Item
 
 caminhao_bp = Blueprint('caminhao_bp', __name__)
 
@@ -128,8 +128,27 @@ def adicionar_gasto(caminhao_id):
     descricao = dados.get('descricao')
     valor = dados.get('valor')
     data_gasto = dados.get('data')
-    tipo = dados.get('tipo', 'Manutenção')  # ← agora recebe o tipo
+    tipo = dados.get('tipo', 'Manutenção')
     quantidade = dados.get('quantidade', 1)
+    item_id = dados.get('item_id')
+
+    try:
+        quantidade = int(quantidade) if quantidade else 1
+        if quantidade < 1:
+            quantidade = 1
+    except (ValueError, TypeError):
+        quantidade = 1
+
+    # Quando o gasto vem de um item do estoque, o servidor recalcula o valor
+    # a partir do preço unitário oficial cadastrado — nunca confia no valor
+    # vindo do frontend para evitar inconsistência entre estoque e financeiro.
+    if item_id:
+        item = Item.query.get(item_id)
+        if not item:
+            return jsonify({'error': 'Item de estoque não encontrado'}), 404
+        descricao = item.nome
+        valor = float(item.valor_unitario) * quantidade
+        tipo = tipo if tipo and tipo != 'item' else 'Item de Estoque'
 
     if not all([descricao, valor, data_gasto]):
         return jsonify({'error': 'Campos incompletos!'}), 400
@@ -141,7 +160,7 @@ def adicionar_gasto(caminhao_id):
             valor=float(valor),
             data=datetime.strptime(data_gasto, '%Y-%m-%d'),
             tipo=tipo,
-            quantidade=int(quantidade) if quantidade else 1
+            quantidade=quantidade
         )
         db.session.add(novo_gasto)
         db.session.commit()

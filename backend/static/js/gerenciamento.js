@@ -359,11 +359,19 @@ async function carregarItensNoModalGasto() {
 
 function alternarTipoGasto() {
     const tipo = document.getElementById("categoriaGasto").value;
-    document.getElementById("campoSelectItem").style.display = tipo === "item" ? "block" : "none";
+    const campoItem = document.getElementById("campoSelectItem");
+    const campoValor = document.getElementById("valorGasto");
+
+    campoItem.style.display = tipo === "item" ? "block" : "none";
 
     if (tipo !== "item") {
         document.getElementById("descricaoGasto").value = "";
-        document.getElementById("valorGasto").value = "";
+        campoValor.value = "";
+        campoValor.readOnly = false;
+        campoValor.style.background = "";
+    } else {
+        campoValor.readOnly = true;
+        campoValor.style.background = "var(--color-background-secondary, #f0f0f0)";
     }
 }
 
@@ -371,8 +379,24 @@ function preencherValorItem() {
     const select = document.getElementById("itemSelecionado");
     const opcao = select.options[select.selectedIndex];
     if (!opcao.value) return;
+
     document.getElementById("descricaoGasto").value = opcao.dataset.nome;
-    document.getElementById("valorGasto").value = parseFloat(opcao.dataset.valor).toFixed(2);
+    recalcularValorGasto();
+}
+
+function recalcularValorGasto() {
+    const select = document.getElementById("itemSelecionado");
+    const opcao = select.options[select.selectedIndex];
+
+    // Só recalcula automaticamente quando um item do estoque está selecionado.
+    // Para Manutenção/Pedágio/Outros, o gestor digita o valor total manualmente.
+    if (!opcao || !opcao.value) return;
+
+    const precoUnitario = parseFloat(opcao.dataset.valor) || 0;
+    const quantidade = parseInt(document.getElementById("quantidadeGasto").value) || 1;
+    const valorTotal = precoUnitario * quantidade;
+
+    document.getElementById("valorGasto").value = valorTotal.toFixed(2);
 }
 
 // === CRUD: Caminhão ===
@@ -416,8 +440,16 @@ async function salvarGasto() {
     const tipo = document.getElementById("categoriaGasto").value;
     const quantidade = parseInt(document.getElementById("quantidadeGasto").value) || 1;
 
+    const selectItem = document.getElementById("itemSelecionado");
+    const itemId = (tipo === "item" && selectItem && selectItem.value) ? selectItem.value : null;
+
     if (!descricao || !valor || !data) {
         alert("Preencha todos os campos do gasto!");
+        return;
+    }
+
+    if (tipo === "item" && !itemId) {
+        alert("Selecione um item do estoque.");
         return;
     }
 
@@ -425,7 +457,7 @@ async function salvarGasto() {
         const resposta = await fetch(`/api/caminhoes/${caminhaoId}/gastos`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ descricao, valor, data, tipo, quantidade })
+            body: JSON.stringify({ descricao, valor, data, tipo, quantidade, item_id: itemId })
         });
 
         const result = await resposta.json();
