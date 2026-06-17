@@ -6,39 +6,41 @@ dashboard_bp = Blueprint('dashboard_bp', __name__)
 
 # ==================== FUNÇÃO AUXILIAR DE CÁLCULO ====================
 def calcular_consumo_medio_veiculo(caminhao_id):
-    """
-    Calcula o consumo médio (km/L) via média ponderada baseando-se nos abastecimentos.
-    Garante a conversão de tipos (Decimal para float) para evitar o erro de operandos.
-    """
     abastecimentos = Abastecimento.query.filter_by(caminhao_id=caminhao_id)\
         .order_by(Abastecimento.km_atual.asc()).all()
 
     if len(abastecimentos) < 2:
         return "Sem dados suficientes"
 
-    total_km_rodados = 0
-    total_litros_consumidos = 0.0  # Iniciado explicitamente como float
+    total_km_rodados = 0.0
+    total_litros_consumidos = 0.0
 
     for i in range(len(abastecimentos) - 1):
-        abast_atual = abastecimentos[i]
-        abast_proximo = abastecimentos[i + 1]
+        abast_anterior = abastecimentos[i]
+        abast_atual = abastecimentos[i + 1]
 
-        if not abast_atual.km_atual or not abast_proximo.km_atual:
+        if not abast_anterior.km_atual or not abast_atual.km_atual:
             continue
 
-        # Força os valores a virarem floats puros para aceitarem matemática entre si
-        km_parcial = float(abast_proximo.km_atual) - float(abast_atual.km_atual)
-        litros_parcial = float(abast_proximo.litros) if abast_proximo.litros else 0.0
+        km_parcial = float(abast_atual.km_atual) - float(abast_anterior.km_atual)
 
-        if km_parcial > 0 and litros_parcial > 0:
-            total_km_rodados += km_parcial
-            total_litros_consumidos += litros_parcial
+        # ignora erro de digitação (km menor que o anterior)
+        if km_parcial <= 0:
+            continue
+
+        litros_parcial = float(abast_atual.litros) if abast_atual.litros else 0.0
+
+        if litros_parcial <= 0:
+            continue
+
+        total_km_rodados += km_parcial
+        total_litros_consumidos += litros_parcial
 
     if total_litros_consumidos == 0:
         return "Sem dados suficientes"
 
-    # Agora ambos são floats, a divisão vai rodar sem erro nenhum!
-    consumo_medio = float(total_km_rodados) / total_litros_consumidos
+    consumo_medio = total_km_rodados / total_litros_consumidos
+
     return f"{consumo_medio:.2f} km/L"
 
 
