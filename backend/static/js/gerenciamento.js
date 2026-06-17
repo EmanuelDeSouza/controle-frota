@@ -452,15 +452,29 @@ async function salvarGasto() {
 
 async function listarGastos(caminhaoId) {
     try {
-        const [resGastos, resAbast]  = await Promise.all([
-            fetch(`/api/caminhoes/${caminhaoId}/gastos`),
-            fetch(`/api/caminhoes/${caminhaoId}/abastecimentos`)
+        const [resGastos, resAbast] = await Promise.all([
+            fetch(`/api/caminhoes/${caminhaoId}/gastos`, {
+                credentials: "include"
+            }),
+            fetch(`/api/caminhoes/${caminhaoId}/abastecimentos`, {
+                credentials: "include"
+            })
         ]);
-        
+
+        // 🔴 DEBUG IMPORTANTE (remove depois se quiser)
+        if (!resGastos.ok) {
+            console.error(await resGastos.text());
+            throw new Error("Erro ao buscar gastos");
+        }
+
+        if (!resAbast.ok) {
+            console.error(await resAbast.text());
+            throw new Error("Erro ao buscar abastecimentos");
+        }
+
         const gastos = await resGastos.json();
         const abastecimentos = await resAbast.json();
 
-        // Mapeando abastecimentos na lista mista de gastos
         const abastFormatados = abastecimentos.map(a => ({
             id: a.id,
             caminhao_id: caminhaoId,
@@ -468,10 +482,11 @@ async function listarGastos(caminhaoId) {
             tipo: 'Abastecimento',
             valor: a.valor,
             data: a.data,
-            is_abastecimento: true  
+            is_abastecimento: true
         }));
-        
-        const tudo = [...gastos, ...abastFormatados].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+        const tudo = [...gastos, ...abastFormatados]
+            .sort((a, b) => new Date(b.data) - new Date(a.data));
 
         const modal = document.getElementById("modalListaGastos");
         const tbody = modal.querySelector("tbody");
@@ -482,16 +497,17 @@ async function listarGastos(caminhaoId) {
 
         tudo.forEach(g => {
             const linha = document.createElement("tr");
-            const corTipo = g.tipo === 'Abastecimento' ? '#1565C0' :
-                            g.tipo === 'Manutenção' ? '#F57C00' :
-                            g.tipo === 'Pedágio' ? '#6a1b9a' : '#888';
 
-            // AJUSTADO: Passa corretamente o ID e o Tipo para a nova função global 'excluirGasto'
+            const corTipo =
+                g.tipo === 'Abastecimento' ? '#1565C0' :
+                g.tipo === 'Manutenção' ? '#F57C00' :
+                g.tipo === 'Pedágio' ? '#6a1b9a' : '#888';
+
             linha.innerHTML = `
                 <td>${g.descricao}</td>
                 <td><span style="color:${corTipo}; font-weight:600;">${g.tipo || '---'}</span></td>
                 <td>R$ ${parseFloat(g.valor).toFixed(2)}</td>
-                <td>${g.data.split('-').reverse().join('/')}</td>
+                <td>${g.data ? g.data.split('-').reverse().join('/') : '-'}</td>
                 <td>
                     ${g.is_abastecimento
                         ? `<button onclick="deletarAbastecimento(${g.id}, ${g.caminhao_id})" class="btn-danger">Excluir</button>`
@@ -499,12 +515,14 @@ async function listarGastos(caminhaoId) {
                     }
                 </td>
             `;
+
             total += parseFloat(g.valor);
             tbody.appendChild(linha);
         });
 
         totalEl.textContent = `Total: R$ ${total.toFixed(2)}`;
         modal.style.display = "flex";
+
     } catch (error) {
         console.error("Erro ao listar gastos:", error);
         alert("Não foi possível carregar os gastos.");
@@ -867,6 +885,3 @@ async function excluirItem(itemId) {
         alert("Falha ao comunicar com o servidor.");
     }
 }
-window.abrirModalEditarCaminhao = abrirModalEditarCaminhao;
-window.fecharModalEditarCaminhao = fecharModalEditarCaminhao;
-window.salvarEdicaoCaminhao = salvarEdicaoCaminhao;
