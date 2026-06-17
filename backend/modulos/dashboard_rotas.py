@@ -8,41 +8,37 @@ dashboard_bp = Blueprint('dashboard_bp', __name__)
 def calcular_consumo_medio_veiculo(caminhao_id):
     """
     Calcula o consumo médio (km/L) via média ponderada baseando-se nos abastecimentos.
-    Usa a coluna correta 'km_atual' definida no models.py.
+    Garante a conversão de tipos (Decimal para float) para evitar o erro de operandos.
     """
-    # Busca os abastecimentos ordenados pela quilometragem crescente (km_atual)
     abastecimentos = Abastecimento.query.filter_by(caminhao_id=caminhao_id)\
         .order_by(Abastecimento.km_atual.asc()).all()
 
-    # Precisamos de pelo menos 2 registros para calcular a distância rodada entre eles
     if len(abastecimentos) < 2:
         return "Sem dados suficientes"
 
     total_km_rodados = 0
-    total_litros_consumidos = 0
+    total_litros_consumidos = 0.0  # Iniciado explicitamente como float
 
-    # Percorre os registros comparando o atual com o próximo passo no histórico
     for i in range(len(abastecimentos) - 1):
         abast_atual = abastecimentos[i]
         abast_proximo = abastecimentos[i + 1]
 
-        # Validação para ignorar se algum campo estiver nulo ou zerado por erro de digitação
         if not abast_atual.km_atual or not abast_proximo.km_atual:
             continue
 
-        km_parcial = abast_proximo.km_atual - abast_atual.km_atual
+        # Força os valores a virarem floats puros para aceitarem matemática entre si
+        km_parcial = float(abast_proximo.km_atual) - float(abast_atual.km_atual)
         litros_parcial = float(abast_proximo.litros) if abast_proximo.litros else 0.0
 
-        # Só soma se a distância percorrida for positiva e houver litragem válida
         if km_parcial > 0 and litros_parcial > 0:
             total_km_rodados += km_parcial
             total_litros_consumidos += litros_parcial
 
-    # Impede divisão por zero se os litros válidos somarem zero
     if total_litros_consumidos == 0:
         return "Sem dados suficientes"
 
-    consumo_medio = total_km_rodados / total_litros_consumidos
+    # Agora ambos são floats, a divisão vai rodar sem erro nenhum!
+    consumo_medio = float(total_km_rodados) / total_litros_consumidos
     return f"{consumo_medio:.2f} km/L"
 
 
