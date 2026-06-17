@@ -661,3 +661,24 @@ btn-relatorio:hover {
     padding: 6px 12px;
     font-size: 13px;
 }
+
+#modalEditarCaminhao .modal-content input {
+  width: 100% !important;
+  min-width: unset !important;
+  margin: 0 0 8px 0 !important;
+  box-sizing: border-box;
+}
+
+#modalEditarCaminhao .modal-content label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#modalEditarCaminhao .modal-content {
+  width: 360px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
