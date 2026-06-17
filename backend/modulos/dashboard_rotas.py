@@ -1,53 +1,60 @@
-from flask import Blueprint, jsonify, session
+from flask import Blueprint, jsonify, session, render_template, redirect, url_for
 from sqlalchemy import func
 from models import db, Gasto, Abastecimento, Caminhao, Receita
 
 dashboard_bp = Blueprint('dashboard_bp', __name__)
 
+# ==================== FUNÇÃO AUXILIAR DE CÁLCULO ====================
 def calcular_consumo_medio_veiculo(caminhao_id):
     """
-    Calcula o consumo médio (km/L) de um veículo com base no histórico de abastecimentos.
-    Aplica a lógica: (Km_atual - Km_anterior) / Litros_atual para trechos consecutivos.
+    Calcula o consumo médio (km/L) via média ponderada baseando-se nos abastecimentos.
+    Ignora registros com quilometragem zerada ou inconsistente.
     """
-    # Busca os abastecimentos associados ao caminhao_id ordenados por KM crescente
+    # Busca os abastecimentos ordenados pela quilometragem (odômetro)
     abastecimentos = Abastecimento.query.filter_by(caminhao_id=caminhao_id)\
-                                        .order_by(Abastecimento.km.asc())\
-                                        .all()
-    
-    # Caso de borda 1: Mínimo de 2 abastecimentos necessários
+        .order_by(Abastecimento.odometro.asc()).all()
+
+   
     if len(abastecimentos) < 2:
         return "Sem dados suficientes"
-    
-    total_distancia = 0
-    total_litros = 0
-    trechos_validos = 0
-    
-    # Percorre os abastecimentos calculando a diferença entre trechos consecutivos
-    for i in range(1, len(abastecimentos)):
-        abastecimento_anterior = abastecimentos[i - 1]
-        abastecimento_atual = abastecimentos[i]
+
+    total_km_rodados = 0
+    total_litros_consumidos = 0
+
+   
+    for i in range(len(abastecimentos) - 1):
+        abast_atual = abastecimentos[i]
+        abast_proximo = abastecimentos[i + 1]
+
+     
+        if not abast_atual.odometro or not abast_proximo.odometro:
+            continue
+
+        km_parcial = abast_proximo.odometro - abast_atual.odometro
+        litros_parcial = float(abast_proximo.litros) if abast_proximo.litros else 0.0
+
         
-        distancia_trecho = abastecimento_atual.km - abastecimento_anterior.km
-        litros_trecho = abastecimento_atual.litros
-        
-        # Caso de borda 2: Proteção contra KM decrescente ou erro de digitação de litros
-        if distancia_trecho <= 0 or litros_trecho <= 0:
-            continue  
-            
-        total_distancia += distancia_trecho
-        total_litros += litros_trecho
-        trechos_validos += 1
-        
-    # Se após filtrar os erros de digitação nenhum trecho restou válido
-    if trechos_validos == 0 or total_litros == 0:
+        if km_parcial > 0 and litros_parcial > 0:
+            total_km_rodados += km_parcial
+            total_litros_consumidos += litros_parcial
+
+   
+    if total_litros_consumidos == 0:
         return "Sem dados suficientes"
-        
-    # Média ponderada real do consumo
-    consumo_medio = total_distancia / total_litros
-    
+
+    consumo_medio = total_km_rodados / total_litros_consumidos
     return f"{consumo_medio:.2f} km/L"
 
 
+# ==================== ROTA VISUAL (HTML) ====================
+@dashboard_bp.route('/dashboard')
+def dashboard():
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
+
+
+# ==================== ROTA DE DADOS (API JSON) ====================
 @dashboard_bp.route('/api/dashboard', methods=['GET'])
 def dados_dashboard():
     if 'usuario_id' not in session:
@@ -60,14 +67,14 @@ def dados_dashboard():
         res_gastos = db.session.query(func.sum(Gasto.valor))\
             .join(Caminhao, Gasto.caminhao_id == Caminhao.id)\
             .filter(Caminhao.usuario_id == usuario_id).scalar()
-        gastos_gerais = float(res_gastos) if res_gastos is not None else 0.0
+        gastres_gerais = float(res_gastos) if res_gastos is not None else 0.0
 
         res_abast = db.session.query(func.sum(Abastecimento.valor))\
             .join(Caminhao, Abastecimento.caminhao_id == Caminhao.id)\
             .filter(Caminhao.usuario_id == usuario_id).scalar()
         abastecimentos_total = float(res_abast) if res_abast is not None else 0.0
 
-        total_despesas_unificadas = gastos_gerais + abastecimentos_total
+        total_despesas_unificadas = gastres_gerais + abastecimentos_total
 
         res_receitas = db.session.query(func.sum(Receita.valor))\
             .join(Caminhao, Receita.caminhao_id == Caminhao.id)\
@@ -111,8 +118,8 @@ def dados_dashboard():
             gastos_totais_caminhao = g_individual + a_individual
             lucro_caminhao = r_individual - gastos_totais_caminhao
             
-            # Executa a regra matemática do consumo médio para o caminhão atual
-            consumo_veiculo = calcular_consumo_medio_veiculo(caminhao.id)
+            # Executa a regra do consumo médio para o caminhão atual da iteração
+            consumo_calculado = calcular_consumo_medio_veiculo(caminhao.id)
             
             resumo_caminhoes.append({
                 "placa": caminhao.placa,
@@ -120,7 +127,7 @@ def dados_dashboard():
                 "total_gastos": gastos_totais_caminhao,
                 "total_receitas": r_individual,
                 "lucro": lucro_caminhao,
-                "consumo_medio": consumo_veiculo  # Chave injetada com sucesso no JSON
+                "consumo_medio": consumo_calculado  # Nova chave injetada na API
             })
 
         return jsonify({
@@ -133,4 +140,5 @@ def dados_dashboard():
         })
         
     except Exception as e:
+        print(f"ERRO CRÍTICO NO BACKEND DO DASHBOARD: {str(e)}")  # Ajuda no debug do terminal
         return jsonify({'error': str(e)}), 500
