@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const listaBody = document.getElementById("lista-caminhoes-body");
     const listaVazia = document.getElementById("lista-vazia-msg");
     const corpoTabelaItens = document.getElementById('lista-itens-body');
+   
 
     // ==========================================
     // 🚚 CONTEXTO: CAMINHÕES
@@ -335,6 +336,10 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarItensNoSelect();
     carregarCaminhoesNoSelect();
 });
+
+window.abrirModalEditarCaminhao = abrirModalEditarCaminhao;
+window.fecharModalEditarCaminhao = fecharModalEditarCaminhao;
+window.salvarEdicaoCaminhao = salvarEdicaoCaminhao;
 
 // ==========================================
 // 🧮 FUNÇÕES GLOBAIS (CHAMADAS EXTERNAS / INLINE HTML)
@@ -862,3 +867,6 @@ async function excluirItem(itemId) {
         alert("Falha ao comunicar com o servidor.");
     }
 }
+window.abrirModalEditarCaminhao = abrirModalEditarCaminhao;
+window.fecharModalEditarCaminhao = fecharModalEditarCaminhao;
+window.salvarEdicaoCaminhao = salvarEdicaoCaminhao;

@@ -156,17 +156,27 @@ def listar_gastos(caminhao_id):
     if 'usuario_id' not in session:
         return jsonify({'error': 'Usuário não autenticado'}), 401
 
-    caminhao = Caminhao.query.filter_by(id=caminhao_id, usuario_id=session['usuario_id']).first()
+    caminhao = Caminhao.query.filter_by(
+        id=caminhao_id,
+        usuario_id=session['usuario_id']
+    ).first()
+
     if not caminhao:
         return jsonify({'error': 'Caminhão não encontrado'}), 404
 
     gastos = Gasto.query.filter_by(caminhao_id=caminhao_id).all()
-    return jsonify([{
-        'id': g.id, 'descricao': g.descricao,
-        'valor': float(g.valor),
-        'data': g.data.strftime('%Y-%m-%d'),
-        'tipo': g.tipo
-    } for g in gastos])
+
+    resultado = []
+    for g in gastos:
+        resultado.append({
+            'id': g.id,
+            'descricao': g.descricao or '',
+            'valor': float(g.valor or 0),
+            'data': g.data.strftime('%Y-%m-%d') if g.data else '',
+            'tipo': g.tipo or ''
+        })
+
+    return jsonify(resultado)
 
 # ==================== ABASTECIMENTO ====================
 
