@@ -128,7 +128,9 @@ def adicionar_gasto(caminhao_id):
     descricao = dados.get('descricao')
     valor = dados.get('valor')
     data_gasto = dados.get('data')
-    tipo = dados.get('tipo', 'Manutenção')  # ← agora recebe o tipo
+    tipo = dados.get('tipo', 'Manutenção') 
+    quantidade = dados.get('quantidade')
+
 
     if not all([descricao, valor, data_gasto]):
         return jsonify({'error': 'Campos incompletos!'}), 400
@@ -139,7 +141,8 @@ def adicionar_gasto(caminhao_id):
             descricao=descricao,
             valor=float(valor),
             data=datetime.strptime(data_gasto, '%Y-%m-%d'),
-            tipo=tipo
+            tipo=tipo,
+            quantidade=quantidade
         )
         db.session.add(novo_gasto)
         db.session.commit()

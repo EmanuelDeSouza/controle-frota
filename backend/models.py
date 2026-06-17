@@ -36,6 +36,7 @@ class Gasto(db.Model):
     data = db.Column(db.Date, nullable=False)
     tipo = db.Column(db.String(50), nullable=False)
     caminhao_id = db.Column(db.Integer, db.ForeignKey('caminhao.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False, default=1)
 
 class Abastecimento(db.Model):
     __tablename__='abastecimento'

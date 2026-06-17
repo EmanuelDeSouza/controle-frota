@@ -292,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
 
                 dados.forEach(g => {
-                    const dataFormatada = g.data.split("-").reverse().join("/");
+                    const dataFormatada = (g.data || "").split('-').reverse().join('/');
                     total += parseFloat(g.valor);
                     tabela += `
                         <tr>
@@ -410,12 +410,15 @@ function fecharModalGasto() {
     document.getElementById("modalGasto").style.display = "none";
 }
 
+const quantidade = document.getElementById("quantidadeGasto")?.value;
+
 async function salvarGasto() {
     const caminhaoId = document.getElementById("caminhaoIdGasto").value;
     const descricao = document.getElementById("descricaoGasto").value;
     const valor = document.getElementById("valorGasto").value;
     const data = document.getElementById("dataGasto").value;
-    const tipo = document.getElementById("categoriaGasto").value; 
+    const tipo = document.getElementById("categoriaGasto").value;
+    const quantidade = document.getElementById("quantidadeGasto")?.value;
 
     if (!descricao || !valor || !data) {
         alert("Preencha todos os campos do gasto!");
@@ -426,7 +429,7 @@ async function salvarGasto() {
         const resposta = await fetch(`/api/caminhoes/${caminhaoId}/gastos`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ descricao, valor, data, tipo }) 
+            body: JSON.stringify({ descricao, valor, data, tipo, quantidade })
         });
 
         const result = await resposta.json();
