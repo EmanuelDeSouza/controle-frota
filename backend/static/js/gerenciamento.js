@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const listaBody = document.getElementById("lista-caminhoes-body");
     const listaVazia = document.getElementById("lista-vazia-msg");
     const corpoTabelaItens = document.getElementById('lista-itens-body');
-   
 
     // ==========================================
     // 🚚 CONTEXTO: CAMINHÕES
@@ -274,9 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 let total = 0;
-                const corTipo = t => t === 'Abastecimento' ? '#1565C0' :
-                                      t === 'Manutenção' ? '#F57C00' :
-                                      t === 'Pedágio' ? '#6a1b9a' : '#888';
 
                 let tabela = `
                     <table border="1" class="tabela-relatorio" style="width:100%; border-collapse:collapse; margin-top:20px;">
@@ -293,13 +289,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
 
                 dados.forEach(g => {
-                    const dataFormatada = (g.data || "").split('-').reverse().join('/');
+                    const dataFormatada = g.data.split("-").reverse().join("/");
                     total += parseFloat(g.valor);
                     tabela += `
                         <tr>
                             <td>${g.placa}</td>
                             <td>${g.descricao}</td>
-                            <td style="color:${corTipo(g.tipo)}; font-weight:600;">${g.tipo}</td>
+                            <td>${badgeTipo(g.tipo)}</td>
                             <td>${dataFormatada}</td>
                             <td>R$ ${parseFloat(g.valor).toFixed(2)}</td>
                         </tr>
@@ -336,10 +332,6 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarItensNoSelect();
     carregarCaminhoesNoSelect();
 });
-
-window.abrirModalEditarCaminhao = abrirModalEditarCaminhao;
-window.fecharModalEditarCaminhao = fecharModalEditarCaminhao;
-window.salvarEdicaoCaminhao = salvarEdicaoCaminhao;
 
 // ==========================================
 // 🧮 FUNÇÕES GLOBAIS (CHAMADAS EXTERNAS / INLINE HTML)
@@ -415,15 +407,12 @@ function fecharModalGasto() {
     document.getElementById("modalGasto").style.display = "none";
 }
 
-const quantidade = document.getElementById("quantidadeGasto")?.value;
-
 async function salvarGasto() {
     const caminhaoId = document.getElementById("caminhaoIdGasto").value;
     const descricao = document.getElementById("descricaoGasto").value;
     const valor = document.getElementById("valorGasto").value;
     const data = document.getElementById("dataGasto").value;
-    const tipo = document.getElementById("categoriaGasto").value;
-    const quantidade = document.getElementById("quantidadeGasto")?.value;
+    const tipo = document.getElementById("categoriaGasto").value; 
 
     if (!descricao || !valor || !data) {
         alert("Preencha todos os campos do gasto!");
@@ -434,7 +423,7 @@ async function salvarGasto() {
         const resposta = await fetch(`/api/caminhoes/${caminhaoId}/gastos`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ descricao, valor, data, tipo, quantidade })
+            body: JSON.stringify({ descricao, valor, data, tipo }) 
         });
 
         const result = await resposta.json();
@@ -450,31 +439,30 @@ async function salvarGasto() {
     }
 }
 
+function badgeTipo(tipo) {
+    const classes = {
+        'Abastecimento': 'badge-abastecimento',
+        'Manutenção': 'badge-manutencao',
+        'Pedágio': 'badge-pedagio',
+        'item': 'badge-item',
+        'Item': 'badge-item',
+        'Outros': 'badge-outros'
+    };
+    const classe = classes[tipo] || 'badge-outros';
+    return `<span class="badge-tipo ${classe}">${tipo || '---'}</span>`;
+}
+
 async function listarGastos(caminhaoId) {
     try {
-        const [resGastos, resAbast] = await Promise.all([
-            fetch(`/api/caminhoes/${caminhaoId}/gastos`, {
-                credentials: "include"
-            }),
-            fetch(`/api/caminhoes/${caminhaoId}/abastecimentos`, {
-                credentials: "include"
-            })
+        const [resGastos, resAbast]  = await Promise.all([
+            fetch(`/api/caminhoes/${caminhaoId}/gastos`),
+            fetch(`/api/caminhoes/${caminhaoId}/abastecimentos`)
         ]);
-
-        // 🔴 DEBUG IMPORTANTE (remove depois se quiser)
-        if (!resGastos.ok) {
-            console.error(await resGastos.text());
-            throw new Error("Erro ao buscar gastos");
-        }
-
-        if (!resAbast.ok) {
-            console.error(await resAbast.text());
-            throw new Error("Erro ao buscar abastecimentos");
-        }
-
+        
         const gastos = await resGastos.json();
         const abastecimentos = await resAbast.json();
 
+        // Mapeando abastecimentos na lista mista de gastos
         const abastFormatados = abastecimentos.map(a => ({
             id: a.id,
             caminhao_id: caminhaoId,
@@ -482,11 +470,10 @@ async function listarGastos(caminhaoId) {
             tipo: 'Abastecimento',
             valor: a.valor,
             data: a.data,
-            is_abastecimento: true
+            is_abastecimento: true  
         }));
-
-        const tudo = [...gastos, ...abastFormatados]
-            .sort((a, b) => new Date(b.data) - new Date(a.data));
+        
+        const tudo = [...gastos, ...abastFormatados].sort((a, b) => new Date(b.data) - new Date(a.data));
 
         const modal = document.getElementById("modalListaGastos");
         const tbody = modal.querySelector("tbody");
@@ -498,16 +485,11 @@ async function listarGastos(caminhaoId) {
         tudo.forEach(g => {
             const linha = document.createElement("tr");
 
-            const corTipo =
-                g.tipo === 'Abastecimento' ? '#1565C0' :
-                g.tipo === 'Manutenção' ? '#F57C00' :
-                g.tipo === 'Pedágio' ? '#6a1b9a' : '#888';
-
             linha.innerHTML = `
                 <td>${g.descricao}</td>
-                <td><span style="color:${corTipo}; font-weight:600;">${g.tipo || '---'}</span></td>
+                <td>${badgeTipo(g.tipo)}</td>
                 <td>R$ ${parseFloat(g.valor).toFixed(2)}</td>
-                <td>${g.data ? g.data.split('-').reverse().join('/') : '-'}</td>
+                <td>${g.data.split('-').reverse().join('/')}</td>
                 <td>
                     ${g.is_abastecimento
                         ? `<button onclick="deletarAbastecimento(${g.id}, ${g.caminhao_id})" class="btn-danger">Excluir</button>`
@@ -515,14 +497,12 @@ async function listarGastos(caminhaoId) {
                     }
                 </td>
             `;
-
             total += parseFloat(g.valor);
             tbody.appendChild(linha);
         });
 
         totalEl.textContent = `Total: R$ ${total.toFixed(2)}`;
         modal.style.display = "flex";
-
     } catch (error) {
         console.error("Erro ao listar gastos:", error);
         alert("Não foi possível carregar os gastos.");
