@@ -531,3 +531,40 @@ btn-relatorio:hover {
     margin: 0 auto !important;
     display: inline-block;
 }
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background-color: transparent;
+}
+
+
+.table th, 
+.table td {
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+
+.text-right {
+    text-align: right !important;
+}
+
+
+.font-numeric {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.status-aviso {
+    color: #856404;
+    background-color: #fff3cd;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: normal;
+    display: inline-block;
+}

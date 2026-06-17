@@ -47,7 +47,28 @@
   </table>
 </div>
 
+<table class="table">
+    <thead>
+        <tr>
+            <th>Caminhão</th>
+            <th class="text-right">Lucro Líquido</th>
+            <th class="text-right">Consumo Médio</th> 
+        </tr>
+    </thead>
+   
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Caminhão</th>
+            <th class="text-right">Lucro Líquido</th>
+            <th class="text-right">Consumo Médio</th> </tr>
+    </thead>
+    <tbody id="tbody-resumo">
+        </tbody>
+</table>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Definir Mês de Referência no cabeçalho
@@ -106,23 +127,30 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         }
 
-        // 5. Renderizar a Tabela Dinamicamente
+        // 5. Renderizar a Tabela Dinamicamente (ATUALIZADO)
         const tbody = document.getElementById('tbody-resumo');
-        tbody.innerHTML = ""; // Limpa mocks estásticos
+        tbody.innerHTML = ""; // Limpa mocks estáticos
 
         if (!d.resumo_caminhoes || d.resumo_caminhoes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">Nenhum caminhão cadastrado ou ativo neste período.</td></tr>';
+            // Ajustado o colspan de 5 para 6 para cobrir a nova coluna
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">Nenhum caminhão cadastrado ou ativo neste período.</td></tr>';
         } else {
             d.resumo_caminhoes.forEach(c => {
                 const tr = document.createElement('tr');
                 const corLucro = c.lucro >= 0 ? '#43a047' : '#e53935';
 
+                // Tratamento visual com a tag CSS caso retorne "Sem dados suficientes"
+                let consumoExibicao = c.consumo_medio;
+                if (c.consumo_medio === "Sem dados suficientes") {
+                    consumoExibicao = `<span class="status-aviso">${c.consumo_medio}</span>`;
+                }
+
                 tr.innerHTML = `
-                    <td>${c.placa}</td>
-                    <td>${c.modelo}</td>
-                    <td>${fmt(c.total_gastos)}</td>
-                    <td>${fmt(c.total_receitas)}</td>
-                    <td style="color: ${corLucro}; font-weight: 600;">${fmt(c.lucro)}</td>
+                    <td>${c.modelo} (${c.placa})</td>
+                    <td class="text-right">${fmt(c.total_gastos)}</td>
+                    <td class="text-right">${fmt(c.total_receitas)}</td>
+                    <td class="text-right" style="color: ${corLucro}; font-weight: 600;">${fmt(c.lucro)}</td>
+                    <td class="text-right font-numeric">${consumoExibicao}</td>
                 `;
                 tbody.appendChild(tr);
             });

@@ -15,6 +15,7 @@ app = Flask(
 )
 IS_PRODUCTION = os.environ.get('RENDER') is not None
 
+# ==================== CONFIGURAÇÃO DO BANCO DE DADOS ====================
 DB_USER = os.environ.get('DB_USER', 'postgres')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'projetosema') 
 DB_HOST = os.environ.get('DB_HOST', 'localhost')   
@@ -42,6 +43,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True
 }
 
+# ==================== CONFIGURAÇÃO DE SEGURANÇA E SESSÃO ====================
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'uma_chave_secreta_para_flash')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
 app.config.update(
@@ -51,6 +53,7 @@ app.config.update(
 )
 db.init_app(app)
 
+# ==================== ROTAS DE AUTENTICAÇÃO GERAL ====================
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -63,7 +66,8 @@ def login():
         if usuario_bd and check_password_hash(usuario_bd.senha, senha_form):
             session['usuario_id'] = usuario_bd.id
             session['usuario_nome'] = usuario_bd.nome
-            return redirect(url_for('dashboard'))
+            # CORREÇÃO: Aponta para a rota 'dashboard' de dentro do blueprint 'dashboard_bp'
+            return redirect(url_for('dashboard_bp.dashboard'))
         return render_template('login.html', erro='Usuário ou senha incorretos.')
     return render_template('login.html')
 
@@ -94,6 +98,7 @@ def logout():
     session.clear() 
     return redirect(url_for('login'))
 
+# ==================== ROTAS DE RENDERIZAÇÃO DE TEMPLATES ====================
 @app.route('/dashboard')
 def dashboard():  
     return render_template('dashboard.html')
@@ -106,6 +111,7 @@ def caminhoes():
 def relatorio():
     return render_template('relatorio.html')
 
+# ==================== MIDDLWARE DE VERIFICAÇÃO DE ACESSO ====================
 @app.before_request
 def verificar_autenticacao_global():
     if request.path.startswith('/static/'):
@@ -118,11 +124,13 @@ def verificar_autenticacao_global():
             return jsonify({"erro": "Acesso não autorizado. Faça login."}), 401
         return redirect(url_for('login'))
 
+# Verificação e criação automática das tabelas em desenvolvimento local
 with app.app_context():
     if not IS_PRODUCTION:
         db.create_all()
         print("Tabelas verificadas/criadas com sucesso no banco local!")
     
+# ==================== REGISTRO DOS BLUEPRINTS ====================
 from modulos.caminhao_rotas import caminhao_bp
 from modulos.item_rotas import item_bp
 from modulos.relatorio_rotas import relatorio_bp
