@@ -128,9 +128,8 @@ def adicionar_gasto(caminhao_id):
     descricao = dados.get('descricao')
     valor = dados.get('valor')
     data_gasto = dados.get('data')
-    tipo = dados.get('tipo', 'Manutenção') 
-    quantidade = dados.get('quantidade')
-
+    tipo = dados.get('tipo', 'Manutenção')  # ← agora recebe o tipo
+    quantidade = dados.get('quantidade', 1)
 
     if not all([descricao, valor, data_gasto]):
         return jsonify({'error': 'Campos incompletos!'}), 400
@@ -142,7 +141,7 @@ def adicionar_gasto(caminhao_id):
             valor=float(valor),
             data=datetime.strptime(data_gasto, '%Y-%m-%d'),
             tipo=tipo,
-            quantidade=quantidade
+            quantidade=int(quantidade) if quantidade else 1
         )
         db.session.add(novo_gasto)
         db.session.commit()
@@ -156,27 +155,18 @@ def listar_gastos(caminhao_id):
     if 'usuario_id' not in session:
         return jsonify({'error': 'Usuário não autenticado'}), 401
 
-    caminhao = Caminhao.query.filter_by(
-        id=caminhao_id,
-        usuario_id=session['usuario_id']
-    ).first()
-
+    caminhao = Caminhao.query.filter_by(id=caminhao_id, usuario_id=session['usuario_id']).first()
     if not caminhao:
         return jsonify({'error': 'Caminhão não encontrado'}), 404
 
     gastos = Gasto.query.filter_by(caminhao_id=caminhao_id).all()
-
-    resultado = []
-    for g in gastos:
-        resultado.append({
-            'id': g.id,
-            'descricao': g.descricao or '',
-            'valor': float(g.valor or 0),
-            'data': g.data.strftime('%Y-%m-%d') if g.data else '',
-            'tipo': g.tipo or ''
-        })
-
-    return jsonify(resultado)
+    return jsonify([{
+        'id': g.id, 'descricao': g.descricao,
+        'valor': float(g.valor),
+        'data': g.data.strftime('%Y-%m-%d'),
+        'tipo': g.tipo,
+        'quantidade': g.quantidade if g.quantidade is not None else 1
+    } for g in gastos])
 
 # ==================== ABASTECIMENTO ====================
 
@@ -334,4 +324,3 @@ def listar_receitas_backend(caminhao_id):
         return jsonify(lista)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-

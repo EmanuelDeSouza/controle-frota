@@ -63,7 +63,7 @@
     <input type="text" id="descricaoGasto" placeholder="Ex: Óleo, Diesel, Pneu">
 
     <label>Quantidade:</label>
-    <input type="number" id="quantidadeGasto" min="1" value="1">
+    <input type="number" min="1" step="1" id="quantidadeGasto" value="1" placeholder="1">
 
     <label>Data:</label>
     <input type="date" id="dataGasto">
@@ -77,14 +77,14 @@
 </div>
 
 <div id="modalListaGastos" class="modal" style="display:none;">
-  <div class="modal-content" style="width: 600px;">
+  <div class="modal-content">
     <h3>Histórico de Gastos do Caminhão</h3>
 
     <table>
       <thead>
         <tr>
-          <th>Descrição</th>
           <th>Tipo</th>
+          <th>Descrição</th>
           <th>Qtd.</th>
           <th>Valor</th>
           <th>Data</th>
@@ -174,13 +174,6 @@
       </thead>
       <tbody id="tbodyReceitas"></tbody>
     </table>
-
-    <h4 class="totalReceitas" style="margin-top:15px; text-align:right;">Total: R$ 0.00</h4>
-
-    <button type="button" onclick="fecharModalListaReceitas()">Fechar</button>
-  </div>
-</div>
-
 <div id="modalEditarCaminhao" class="modal" style="display:none;">
   <div class="modal-content">
     <h3>✏️ Editar Caminhão</h3>

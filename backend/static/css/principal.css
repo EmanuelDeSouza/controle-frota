@@ -602,3 +602,62 @@ btn-relatorio:hover {
     background: #F1EFE8;
     color: #2C2C2A;
 }
+
+#modalListaGastos .modal-content {
+    width: 820px;
+    max-width: 92vw;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+#modalListaGastos table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+#modalListaGastos th,
+#modalListaGastos td {
+    padding: 10px 10px;
+    text-align: left;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+
+#modalListaGastos th:nth-child(1),
+#modalListaGastos td:nth-child(1) {
+    width: 16%;
+}
+
+#modalListaGastos th:nth-child(2),
+#modalListaGastos td:nth-child(2) {
+    width: 24%;
+}
+
+#modalListaGastos th:nth-child(3),
+#modalListaGastos td:nth-child(3) {
+    width: 10%;
+    text-align: center;
+}
+
+#modalListaGastos th:nth-child(4),
+#modalListaGastos td:nth-child(4) {
+    width: 14%;
+    text-align: right;
+}
+
+#modalListaGastos th:nth-child(5),
+#modalListaGastos td:nth-child(5) {
+    width: 14%;
+    text-align: center;
+}
+
+#modalListaGastos th:nth-child(6),
+#modalListaGastos td:nth-child(6) {
+    width: 22%;
+    text-align: center;
+}
+
+#modalListaGastos .btn-danger {
+    padding: 6px 12px;
+    font-size: 13px;
+}

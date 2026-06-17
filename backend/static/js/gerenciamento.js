@@ -399,6 +399,7 @@ async function abrirModalGasto(caminhaoId) {
     document.getElementById("campoSelectItem").style.display = "none";
     document.getElementById("descricaoGasto").value = "";
     document.getElementById("valorGasto").value = "";
+    document.getElementById("quantidadeGasto").value = "1";
     document.getElementById("modalGasto").style.display = "flex";
     carregarItensNoModalGasto();
 }
@@ -412,7 +413,8 @@ async function salvarGasto() {
     const descricao = document.getElementById("descricaoGasto").value;
     const valor = document.getElementById("valorGasto").value;
     const data = document.getElementById("dataGasto").value;
-    const tipo = document.getElementById("categoriaGasto").value; 
+    const tipo = document.getElementById("categoriaGasto").value;
+    const quantidade = parseInt(document.getElementById("quantidadeGasto").value) || 1;
 
     if (!descricao || !valor || !data) {
         alert("Preencha todos os campos do gasto!");
@@ -423,7 +425,7 @@ async function salvarGasto() {
         const resposta = await fetch(`/api/caminhoes/${caminhaoId}/gastos`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ descricao, valor, data, tipo }) 
+            body: JSON.stringify({ descricao, valor, data, tipo, quantidade })
         });
 
         const result = await resposta.json();
@@ -470,6 +472,7 @@ async function listarGastos(caminhaoId) {
             tipo: 'Abastecimento',
             valor: a.valor,
             data: a.data,
+            quantidade: 1,
             is_abastecimento: true  
         }));
         
@@ -486,8 +489,9 @@ async function listarGastos(caminhaoId) {
             const linha = document.createElement("tr");
 
             linha.innerHTML = `
-                <td>${g.descricao}</td>
                 <td>${badgeTipo(g.tipo)}</td>
+                <td>${g.descricao}</td>
+                <td>${g.quantidade || 1}</td>
                 <td>R$ ${parseFloat(g.valor).toFixed(2)}</td>
                 <td>${g.data.split('-').reverse().join('/')}</td>
                 <td>
