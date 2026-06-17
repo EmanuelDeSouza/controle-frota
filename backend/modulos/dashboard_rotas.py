@@ -8,37 +8,37 @@ dashboard_bp = Blueprint('dashboard_bp', __name__)
 def calcular_consumo_medio_veiculo(caminhao_id):
     """
     Calcula o consumo médio (km/L) via média ponderada baseando-se nos abastecimentos.
-    Ignora registros com quilometragem zerada ou inconsistente.
+    Usa a coluna correta 'km_atual' definida no models.py.
     """
-    # Busca os abastecimentos ordenados pela quilometragem (odômetro)
+    # Busca os abastecimentos ordenados pela quilometragem crescente (km_atual)
     abastecimentos = Abastecimento.query.filter_by(caminhao_id=caminhao_id)\
-        .order_by(Abastecimento.odometro.asc()).all()
+        .order_by(Abastecimento.km_atual.asc()).all()
 
-   
+    # Precisamos de pelo menos 2 registros para calcular a distância rodada entre eles
     if len(abastecimentos) < 2:
         return "Sem dados suficientes"
 
     total_km_rodados = 0
     total_litros_consumidos = 0
 
-   
+    # Percorre os registros comparando o atual com o próximo passo no histórico
     for i in range(len(abastecimentos) - 1):
         abast_atual = abastecimentos[i]
         abast_proximo = abastecimentos[i + 1]
 
-     
-        if not abast_atual.odometro or not abast_proximo.odometro:
+        # Validação para ignorar se algum campo estiver nulo ou zerado por erro de digitação
+        if not abast_atual.km_atual or not abast_proximo.km_atual:
             continue
 
-        km_parcial = abast_proximo.odometro - abast_atual.odometro
+        km_parcial = abast_proximo.km_atual - abast_atual.km_atual
         litros_parcial = float(abast_proximo.litros) if abast_proximo.litros else 0.0
 
-        
+        # Só soma se a distância percorrida for positiva e houver litragem válida
         if km_parcial > 0 and litros_parcial > 0:
             total_km_rodados += km_parcial
             total_litros_consumidos += litros_parcial
 
-   
+    # Impede divisão por zero se os litros válidos somarem zero
     if total_litros_consumidos == 0:
         return "Sem dados suficientes"
 
@@ -95,7 +95,6 @@ def dados_dashboard():
                 nome_tipo = str(tipo).strip().capitalize()
                 gastos_mapeados[nome_tipo] = gastos_mapeados.get(nome_tipo, 0.0) + float(valor)
         
-        # Insere a categoria de Abastecimento se houver dados
         if abastecimentos_total > 0:
             gastos_mapeados["Abastecimento"] = gastos_mapeados.get("Abastecimento", 0.0) + abastecimentos_total
 
@@ -118,16 +117,16 @@ def dados_dashboard():
             gastos_totais_caminhao = g_individual + a_individual
             lucro_caminhao = r_individual - gastos_totais_caminhao
             
-            # Executa a regra do consumo médio para o caminhão atual da iteração
+            # Chama a função corretiva usando os dados do banco
             consumo_calculado = calcular_consumo_medio_veiculo(caminhao.id)
             
             resumo_caminhoes.append({
                 "placa": caminhao.placa,
-                "modelo": caminhao.modelo if hasattr(caminhao, 'modelo') else "Não Informado",
+                "modelo": caminhao.modelo,
                 "total_gastos": gastos_totais_caminhao,
                 "total_receitas": r_individual,
                 "lucro": lucro_caminhao,
-                "consumo_medio": consumo_calculado  # Nova chave injetada na API
+                "consumo_medio": consumo_calculado
             })
 
         return jsonify({
@@ -140,5 +139,5 @@ def dados_dashboard():
         })
         
     except Exception as e:
-        print(f"ERRO CRÍTICO NO BACKEND DO DASHBOARD: {str(e)}")  # Ajuda no debug do terminal
+        print(f"ERRO CRÍTICO NO BACKEND DO DASHBOARD: {str(e)}")
         return jsonify({'error': str(e)}), 500
