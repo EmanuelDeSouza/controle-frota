@@ -53,17 +53,61 @@ def listar_itens():
         } for i in itens
     ])
 
-@item_bp.route('/api/gastos/item/<int:id>', methods=['DELETE'])
-@item_bp.route('/api/gastos/manutencao/<int:id>', methods=['DELETE'])
-def excluir_gasto(id):
+@item_bp.route('/api/itens/<int:id>', methods=['GET'])
+def obter_item(id):
+    if 'usuario_id' not in session:
+        return jsonify({'erro': 'Não autorizado'}), 401
+
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({'erro': 'Item não encontrado.'}), 404
+
+    return jsonify({
+        'id': item.id,
+        'nome': item.nome,
+        'valor_unitario': float(item.valor_unitario) if item.valor_unitario else 0.0,
+        'categoria': item.categoria
+    })
+
+@item_bp.route('/api/itens/<int:id>', methods=['PUT'])
+def editar_item(id):
+    if 'usuario_id' not in session:
+        return jsonify({'erro': 'Não autorizado'}), 401
+
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({'erro': 'Item não encontrado.'}), 404
+
+    dados = request.get_json() or {}
+    nome = dados.get('nome')
+    valor_unitario = dados.get('valor_unitario')
+
+    if not nome or valor_unitario is None:
+        return jsonify({'erro': 'Nome e valor são obrigatórios'}), 400
+
     try:
-        gasto = Gasto.query.get(id)
-        if not gasto:
-            return jsonify({"erro": "Gasto não encontrado."}), 404
-        
-        db.session.delete(gasto)
+        item.nome = nome
+        item.valor_unitario = float(valor_unitario)
+        item.categoria = dados.get('categoria')
         db.session.commit()
-        return jsonify({"mensagem": "Gasto excluído com sucesso!"}), 200
+        return jsonify({'mensagem': 'Item atualizado com sucesso!'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"erro": f"Erro ao excluir: {str(e)}"}), 500
+        return jsonify({'erro': f'Erro ao atualizar item: {str(e)}'}), 500
+
+@item_bp.route('/api/itens/<int:id>', methods=['DELETE'])
+def excluir_item(id):
+    if 'usuario_id' not in session:
+        return jsonify({'erro': 'Não autorizado'}), 401
+
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({'erro': 'Item não encontrado.'}), 404
+
+    try:
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify({'mensagem': 'Item excluído com sucesso!'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'erro': f'Erro ao excluir item: {str(e)}'}), 500

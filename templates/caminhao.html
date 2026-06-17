@@ -170,8 +170,31 @@
       </thead>
       <tbody id="tbodyReceitas"></tbody>
     </table>
-    <h4 class="totalReceitas" style="margin-top:15px; text-align:right;">Total: R$ 0.00</h4>
-    <button type="button" onclick="fecharModalListaReceitas()">Fechar</button>
+<div id="modalEditarCaminhao" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>✏️ Editar Caminhão</h3>
+    <input type="hidden" id="editCaminhaoId">
+
+    <label>Placa:</label>
+    <input class="input" type="text" id="editPlaca" placeholder="Placa">
+
+    <label>Modelo:</label>
+    <input class="input" type="text" id="editModelo" placeholder="Modelo">
+
+    <label>Fabricante:</label>
+    <input class="input" type="text" id="editFabricante" placeholder="Fabricante">
+
+    <label>Ano:</label>
+    <input class="input" type="number" id="editAno" placeholder="Ano">
+
+    <label>Chassi:</label>
+    <input class="input" type="text" id="editChassi" placeholder="Chassi">
+
+    <label>Prefixo:</label>
+    <input class="input" type="text" id="editPrefixo" placeholder="Prefixo">
+
+    <button type="button" onclick="salvarEdicaoCaminhao()">Salvar Alterações</button>
+    <button type="button" onclick="fecharModalEditarCaminhao()">Cancelar</button>
   </div>
 </div>
 {% endblock %}

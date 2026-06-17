@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <div class="dropdown">
                                 <button class="btn-acoes">Ações ▾</button>
                                 <div class="dropdown-menu">
+                                    <button class="dropdown-item" onclick="abrirModalEditarCaminhao(${c.id})">✏️ Editar Caminhão</button>
                                     <button class="add-expense" data-id="${c.id}">💰 Adicionar Gasto</button>
                                     <button class="abastecer" data-id="${c.id}">⛽ Registrar Abastecimento</button>
                                     <button class="dropdown-item" onclick="abrirModalReceita(${c.id})">💵 Registrar Receita</button>
@@ -140,6 +141,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>R$ ${parseFloat(item.valor_unitario).toFixed(2)}</td>
                     <td>${item.categoria || '---'}</td>
                     <td>
+                        <button onclick="abrirModalEditarItem(${item.id})" class="btn-editar">
+                            ✏️ Editar
+                        </button>
                         <button onclick="excluirItem(${item.id})" class="btn-danger">
                             <i class="fas fa-trash-alt"></i> Excluir
                         </button>
@@ -704,6 +708,136 @@ async function excluirReceita(receitaId, caminhaoId) {
         }
     } catch (erro) {
         console.error("Erro no fetch de exclusão:", erro);
+    }
+}
+
+// === CRUD: Editar Caminhão ===
+async function abrirModalEditarCaminhao(id) {
+    try {
+        const resposta = await fetch(`/api/caminhoes/${id}`);
+        const c = await resposta.json();
+
+        if (!resposta.ok) {
+            alert(c.erro || "Não foi possível carregar os dados do caminhão.");
+            return;
+        }
+
+        document.getElementById("editCaminhaoId").value = c.id;
+        document.getElementById("editPlaca").value = c.placa;
+        document.getElementById("editModelo").value = c.modelo;
+        document.getElementById("editFabricante").value = c.fabricante;
+        document.getElementById("editAno").value = c.ano;
+        document.getElementById("editChassi").value = c.chassi;
+        document.getElementById("editPrefixo").value = c.prefixo;
+
+        document.getElementById("modalEditarCaminhao").style.display = "flex";
+    } catch (erro) {
+        console.error("Erro ao carregar caminhão:", erro);
+        alert("Falha ao comunicar com o servidor.");
+    }
+}
+
+function fecharModalEditarCaminhao() {
+    document.getElementById("modalEditarCaminhao").style.display = "none";
+}
+
+async function salvarEdicaoCaminhao() {
+    const id = document.getElementById("editCaminhaoId").value;
+
+    const dadosCaminhao = {
+        placa: document.getElementById("editPlaca").value.trim(),
+        modelo: document.getElementById("editModelo").value.trim(),
+        fabricante: document.getElementById("editFabricante").value.trim(),
+        ano: parseInt(document.getElementById("editAno").value),
+        chassi: document.getElementById("editChassi").value.trim(),
+        prefixo: document.getElementById("editPrefixo").value.trim()
+    };
+
+    if (!dadosCaminhao.placa || !dadosCaminhao.modelo || !dadosCaminhao.fabricante || !dadosCaminhao.ano) {
+        alert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+    }
+
+    try {
+        const resposta = await fetch(`/api/caminhoes/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dadosCaminhao)
+        });
+
+        const resultado = await resposta.json();
+        if (resposta.ok) {
+            alert(resultado.mensagem || "Caminhão atualizado com sucesso!");
+            fecharModalEditarCaminhao();
+            location.reload();
+        } else {
+            alert(resultado.erro || "Não foi possível atualizar o caminhão.");
+        }
+    } catch (erro) {
+        console.error("Erro ao editar caminhão:", erro);
+        alert("Falha ao comunicar com o servidor.");
+    }
+}
+
+// === CRUD: Editar Item ===
+async function abrirModalEditarItem(id) {
+    try {
+        const resposta = await fetch(`/api/itens/${id}`);
+        const item = await resposta.json();
+
+        if (!resposta.ok) {
+            alert(item.erro || "Não foi possível carregar os dados do item.");
+            return;
+        }
+
+        document.getElementById("editItemId").value = item.id;
+        document.getElementById("editNomeItem").value = item.nome;
+        document.getElementById("editValorUnitario").value = item.valor_unitario;
+        document.getElementById("editCategoriaItem").value = item.categoria || "";
+
+        document.getElementById("modalEditarItem").style.display = "flex";
+    } catch (erro) {
+        console.error("Erro ao carregar item:", erro);
+        alert("Falha ao comunicar com o servidor.");
+    }
+}
+
+function fecharModalEditarItem() {
+    document.getElementById("modalEditarItem").style.display = "none";
+}
+
+async function salvarEdicaoItem() {
+    const id = document.getElementById("editItemId").value;
+
+    const dadosItem = {
+        nome: document.getElementById("editNomeItem").value.trim(),
+        valor_unitario: parseFloat(document.getElementById("editValorUnitario").value),
+        categoria: document.getElementById("editCategoriaItem").value.trim()
+    };
+
+    if (!dadosItem.nome || isNaN(dadosItem.valor_unitario)) {
+        alert("Por favor, insira um nome e um valor unitário válido.");
+        return;
+    }
+
+    try {
+        const resposta = await fetch(`/api/itens/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dadosItem)
+        });
+
+        const resultado = await resposta.json();
+        if (resposta.ok) {
+            alert(resultado.mensagem || "Item atualizado com sucesso!");
+            fecharModalEditarItem();
+            location.reload();
+        } else {
+            alert(resultado.erro || "Não foi possível atualizar o item.");
+        }
+    } catch (erro) {
+        console.error("Erro ao editar item:", erro);
+        alert("Falha ao comunicar com o servidor.");
     }
 }
 

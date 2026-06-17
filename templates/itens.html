@@ -24,7 +24,7 @@
         <th>Nome</th>
         <th>Valor Unitário</th>
         <th>Categoria</th>
-        <th>Excluir</th>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody id="lista-itens-body"></tbody>
@@ -118,7 +118,26 @@
 
     <button onclick="fecharModalHistorico()">Fechar</button>
   </div>
-  
-  
-  
+</div>
+
+<!-- ===== MODAL EDITAR ITEM ===== -->
+<div id="modalEditarItem" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>✏️ Editar Item</h3>
+    <input type="hidden" id="editItemId">
+
+    <label>Nome:</label>
+    <input class="input" type="text" id="editNomeItem" placeholder="Nome">
+
+    <label>Valor Unitário:</label>
+    <input class="input" type="number" step="0.01" id="editValorUnitario" placeholder="Valor Unitário">
+
+    <label>Categoria:</label>
+    <input class="input" type="text" id="editCategoriaItem" placeholder="Categoria">
+
+    <button type="button" onclick="salvarEdicaoItem()">Salvar Alterações</button>
+    <button type="button" onclick="fecharModalEditarItem()">Cancelar</button>
+  </div>
+</div>
+
 {% endblock %}

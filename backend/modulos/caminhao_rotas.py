@@ -19,6 +19,21 @@ def listar_caminhoes():
         'prefixo': c.prefixo, 'chassi': c.chassi
     } for c in caminhoes])
 
+@caminhao_bp.route('/api/caminhoes/<int:id>', methods=['GET'])
+def obter_caminhao(id):
+    if 'usuario_id' not in session:
+        return jsonify({'erro': 'Usuário não autenticado'}), 401
+
+    caminhao = Caminhao.query.filter_by(id=id, usuario_id=session['usuario_id']).first()
+    if not caminhao:
+        return jsonify({'erro': 'Caminhão não encontrado'}), 404
+
+    return jsonify({
+        'id': caminhao.id, 'placa': caminhao.placa, 'modelo': caminhao.modelo,
+        'fabricante': caminhao.fabricante, 'ano': caminhao.ano,
+        'prefixo': caminhao.prefixo, 'chassi': caminhao.chassi
+    })
+
 @caminhao_bp.route('/api/caminhoes', methods=['POST'])
 def cadastrar_caminhao():
     if 'usuario_id' not in session:
@@ -59,6 +74,46 @@ def excluir_caminhao(id):
     db.session.delete(caminhao)
     db.session.commit()
     return jsonify({'mensagem': 'Caminhão excluído com sucesso!'}), 200
+
+@caminhao_bp.route('/api/caminhoes/<int:id>', methods=['PUT'])
+def editar_caminhao(id):
+    if 'usuario_id' not in session:
+        return jsonify({'erro': 'Usuário não autenticado'}), 401
+
+    caminhao = Caminhao.query.filter_by(id=id, usuario_id=session['usuario_id']).first()
+    if not caminhao:
+        return jsonify({'erro': 'Caminhão não encontrado'}), 404
+
+    dados = request.get_json() or {}
+    placa = dados.get('placa')
+    modelo = dados.get('modelo')
+    fabricante = dados.get('fabricante')
+    ano = dados.get('ano')
+    prefixo = dados.get('prefixo')
+    chassi = dados.get('chassi')
+
+    if not all([placa, modelo, fabricante, ano, prefixo, chassi]):
+        return jsonify({'erro': 'Campos obrigatórios ausentes'}), 400
+
+    # Verifica se a placa já existe em OUTRO caminhão
+    placa_existente = Caminhao.query.filter(
+        Caminhao.placa == placa, Caminhao.id != id
+    ).first()
+    if placa_existente:
+        return jsonify({'erro': 'Já existe outro caminhão com essa placa'}), 400
+
+    try:
+        caminhao.placa = placa
+        caminhao.modelo = modelo
+        caminhao.fabricante = fabricante
+        caminhao.ano = int(ano)
+        caminhao.prefixo = prefixo
+        caminhao.chassi = chassi
+        db.session.commit()
+        return jsonify({'mensagem': 'Caminhão atualizado com sucesso!'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'erro': f'Erro ao atualizar: {str(e)}'}), 500
 
 @caminhao_bp.route('/api/caminhoes/<int:caminhao_id>/gastos', methods=['POST'])
 def adicionar_gasto(caminhao_id):
