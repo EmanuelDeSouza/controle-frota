@@ -53,6 +53,7 @@ class Item(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     valor_unitario = db.Column(db.Numeric(10, 2))
     categoria = db.Column(db.String(50))
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
 
 class Manutencao(db.Model):
     __tablename__='manutencao'

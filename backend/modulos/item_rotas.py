@@ -26,7 +26,8 @@ def cadastrar_item():
     novo_item = Item(
         nome=nome,
         valor_unitario=float(valor_unitario),
-        categoria=dados.get('categoria')
+        categoria=dados.get('categoria'),
+        usuario_id=session['usuario_id'] 
     )
 
     try:
@@ -42,15 +43,18 @@ def listar_itens():
     if 'usuario_id' not in session:
         return jsonify([]), 401
 
-    itens = db.session.query(Item).order_by(Item.nome.asc()).all()
-
+    item = (Item.query
+         .filter_by(usuario_id=session['usuario_id'])
+         .order_by(Item.nome.asc())
+         .all())
+    
     return jsonify([
         {
             "id": i.id,
             "nome": i.nome,
             "valor_unitario": float(i.valor_unitario) if i.valor_unitario else 0.0,
             "categoria": i.categoria
-        } for i in itens
+        } for i in item
     ])
 
 @item_bp.route('/api/itens/<int:id>', methods=['GET'])
@@ -58,7 +62,7 @@ def obter_item(id):
     if 'usuario_id' not in session:
         return jsonify({'erro': 'Não autorizado'}), 401
 
-    item = Item.query.get(id)
+    item = Item.query.filter_by(id=id, usuario_id=session['usuario_id']).first()
     if not item:
         return jsonify({'erro': 'Item não encontrado.'}), 404
 
@@ -74,7 +78,7 @@ def editar_item(id):
     if 'usuario_id' not in session:
         return jsonify({'erro': 'Não autorizado'}), 401
 
-    item = Item.query.get(id)
+    item = Item.query.filter_by(id=id, usuario_id=session['usuario_id']).first()
     if not item:
         return jsonify({'erro': 'Item não encontrado.'}), 404
 
@@ -100,7 +104,7 @@ def excluir_item(id):
     if 'usuario_id' not in session:
         return jsonify({'erro': 'Não autorizado'}), 401
 
-    item = Item.query.get(id)
+    item = Item.query.filter_by(id=id, usuario_id=session['usuario_id']).first()
     if not item:
         return jsonify({'erro': 'Item não encontrado.'}), 404
 
