@@ -163,6 +163,7 @@
 <div id="modalListaReceitas" class="modal" style="display:none;">
   <div class="modal-content" style="width: 600px;">
     <h3>📈 Histórico de Receitas do Caminhão</h3>
+
     <table>
       <thead>
         <tr>
@@ -174,6 +175,19 @@
       </thead>
       <tbody id="tbodyReceitas"></tbody>
     </table>
+
+    <h4 class="totalReceitas"
+        style="margin-top:15px; text-align:right;">
+        Total: R$ 0.00
+    </h4>
+
+    <button type="button"
+            onclick="fecharModalListaReceitas()">
+        Fechar
+    </button>
+  </div>
+</div>
+
 <div id="modalEditarCaminhao" class="modal" style="display:none;">
   <div class="modal-content">
     <h3>✏️ Editar Caminhão</h3>

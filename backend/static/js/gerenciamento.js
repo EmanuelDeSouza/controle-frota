@@ -700,7 +700,7 @@ async function listarReceitas(caminhaoId) {
         const receitas = await resposta.json();
 
         const modal = document.getElementById("modalListaReceitas");
-        const tbody = document.getElementById("tbodyReceitas");
+        const tbody = modal.querySelector("tbody");
         const totalEl = modal.querySelector(".totalReceitas");
 
         tbody.innerHTML = "";
@@ -708,25 +708,28 @@ async function listarReceitas(caminhaoId) {
 
         receitas.forEach(r => {
             const linha = document.createElement("tr");
-            const dataFormatada = r.data.includes(' ') ? r.data.split(' ')[0] : r.data;
-            const dataExibicao = dataFormatada.split('-').reverse().join('/');
 
             linha.innerHTML = `
                 <td>${r.descricao}</td>
                 <td>R$ ${parseFloat(r.valor).toFixed(2)}</td>
-                <td>${dataExibicao}</td>
+                <td>${r.data.split('-').reverse().join('/')}</td>
                 <td>
-                    <button onclick="excluirReceita(${r.id}, ${caminhaoId})" class="btn-danger">Excluir</button>
+                    <button onclick="excluirReceita(${r.id}, ${caminhaoId})"
+                            class="btn-danger">
+                        Excluir
+                    </button>
                 </td>
             `;
+
             total += parseFloat(r.valor);
             tbody.appendChild(linha);
         });
 
         totalEl.textContent = `Total: R$ ${total.toFixed(2)}`;
         modal.style.display = "flex";
+
     } catch (erro) {
-        console.error("Erro:", erro);
+        console.error("Erro ao listar receitas:", erro);
         alert("Não foi possível carregar as receitas.");
     }
 }
